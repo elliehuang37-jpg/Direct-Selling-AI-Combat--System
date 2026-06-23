@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI 招募助手 — 台灣雅芳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#893955; --crimson:#DB2654; --yellow:#ECE08B;
+  --teal:#0DACBF; --green:#0C421E;
+  --cream:#FDF8FA; --surface:#FFFFFF;
+  --text:#1C0A14; --sub:#6A4258; --muted:#7A5A6A; --border:#EAD4DE;
+  --r:12px; --shadow:0 2px 20px rgba(13,172,191,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,var(--teal) 0%,#0A8FA0 100%);padding:28px 20px 22px;text-align:center;}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,.55);text-decoration:none;text-transform:uppercase;margin-bottom:16px;transition:color .2s;}
+.back-link:hover{color:rgba(255,255,255,.9);}
+.sys-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.55);text-transform:uppercase;margin-bottom:8px;}
+header h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;letter-spacing:.02em;}
+.header-sub{font-size:12px;font-weight:300;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.04em;}
+
+/* ── MAIN TAB NAV ── */
+.main-tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.tab-row{display:flex;max-width:580px;margin:0 auto;}
+.main-tab{
+  flex:1;padding:14px 8px;
+  background:none;border:none;border-bottom:2.5px solid transparent;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;
+  color:var(--muted);cursor:pointer;transition:all .22s ease;text-align:center;
+  line-height:1.4;
+}
+.main-tab.active{border-bottom-color:var(--teal);color:var(--teal);font-weight:500;}
+
+/* ── MAIN ── */
+main{max-width:580px;margin:0 auto;padding:20px 14px 90px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:14px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.card-desc{font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:18px;}
+.stag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--green);background:var(--yellow);padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;font-weight:500;}
+
+/* ── FORM ── */
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+input[type=text],select,textarea{
+  width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--text);
+  background:var(--cream);transition:all .22s ease;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);background:#fff;}
+textarea{resize:vertical;min-height:70px;line-height:1.65;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── SCORE DIMENSION ── */
+.dim-block{margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid rgba(13,172,191,.1);}
+.dim-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.dim-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.dim-num{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--teal);color:#fff;
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.dim-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);}
+.dim-opts{display:flex;flex-direction:column;gap:6px;}
+.dim-opt{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;background:var(--cream);
+  border:1.5px solid var(--border);border-radius:8px;
+  cursor:pointer;transition:all .2s ease;
+}
+.dim-opt input[type=radio]{
+  width:16px;height:16px;flex-shrink:0;margin-top:2px;
+  accent-color:var(--teal);cursor:pointer;
+}
+.dim-opt-body{flex:1;}
+.dim-score-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--teal);margin-bottom:2px;}
+.dim-opt-text{font-size:12.5px;color:var(--sub);line-height:1.5;}
+.dim-opt:has(input:checked){border-color:var(--teal);background:rgba(13,172,191,.06);}
+.dim-opt:has(input:checked) .dim-opt-text{color:var(--text);}
+
+/* ── SCORE RESULT ── */
+.score-result{display:none;animation:fadeUp .35s ease;}
+.score-result.visible{display:block;}
+.grade-banner{
+  border-radius:12px;padding:24px 20px;text-align:center;margin-bottom:14px;
+}
+.grade-a{background:linear-gradient(135deg,rgba(219,38,84,.12) 0%,rgba(137,57,85,.08) 100%);border:1.5px solid rgba(219,38,84,.25);}
+.grade-b{background:linear-gradient(135deg,rgba(13,172,191,.12) 0%,rgba(13,172,191,.06) 100%);border:1.5px solid rgba(13,172,191,.25);}
+.grade-c{background:linear-gradient(135deg,rgba(12,66,30,.08) 0%,rgba(12,66,30,.04) 100%);border:1.5px solid rgba(12,66,30,.2);}
+.grade-letter{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:600;line-height:1;}
+.grade-a .grade-letter{color:var(--crimson);}
+.grade-b .grade-letter{color:var(--teal);}
+.grade-c .grade-letter{color:var(--green);}
+.grade-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-top:8px;}
+.grade-sub{font-size:12.5px;color:var(--sub);margin-top:4px;}
+.score-num{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.06em;color:var(--muted);margin-top:10px;}
+
+.score-bar-wrap{background:#EAD4DE;border-radius:20px;height:8px;margin:12px 0 4px;overflow:hidden;}
+.score-bar{height:100%;border-radius:20px;transition:width .6s ease;}
+.grade-a .score-bar{background:var(--crimson);}
+.grade-b .score-bar{background:var(--teal);}
+.grade-c .score-bar{background:var(--green);}
+
+.strategy-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:18px;margin-bottom:12px;}
+.strategy-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.grade-a .strategy-title,.st-a{color:var(--crimson);}
+.grade-b .strategy-title,.st-b{color:var(--teal);}
+.grade-c .strategy-title,.st-c{color:var(--green);}
+.strategy-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.strategy-list li{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:13px;color:var(--sub);line-height:1.6;
+}
+.strategy-list li::before{content:'→';font-family:'DM Mono',monospace;font-size:11px;flex-shrink:0;margin-top:2px;}
+.grade-a .strategy-list li::before{color:var(--crimson);}
+.grade-b .strategy-list li::before{color:var(--teal);}
+.grade-c .strategy-list li::before{color:var(--green);}
+
+/* ── BUTTONS ── */
+.btn-teal{width:100%;padding:14px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:all .25s ease;}
+.btn-teal:hover{background:#0A9FAF;transform:translateY(-1px);}
+.btn-teal:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-outline{width:100%;padding:12px;background:transparent;border:1.5px solid var(--teal);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--teal);cursor:pointer;transition:all .22s ease;margin-top:8px;}
+.btn-outline:hover{background:var(--teal);color:#fff;}
+
+/* ── MESSAGE GENERATOR ── */
+.tone-row{display:flex;gap:8px;margin-bottom:16px;}
+.tone-btn{flex:1;padding:11px;background:var(--cream);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--sub);cursor:pointer;transition:all .22s ease;text-align:center;}
+.tone-btn.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+.msg-output{display:none;}
+.msg-output.visible{display:block;animation:fadeUp .3s ease;}
+.msg-box{
+  background:linear-gradient(135deg,rgba(13,172,191,.07) 0%,rgba(13,172,191,.04) 100%);
+  border:1px solid rgba(13,172,191,.2);border-radius:10px;
+  padding:18px;font-size:13.5px;color:var(--text);line-height:1.9;margin-bottom:10px;
+}
+.msg-box-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--teal);text-transform:uppercase;margin-bottom:10px;}
+.copy-msg{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;padding:11px;background:var(--teal);color:#fff;
+  border:none;border-radius:8px;font-family:'DM Mono',monospace;
+  font-size:11px;letter-spacing:.06em;cursor:pointer;transition:all .22s ease;margin-top:4px;
+}
+.copy-msg:hover{background:#0A9FAF;}
+.copy-msg.ok{background:var(--green);}
+
+/* ── REJECTION LIBRARY ── */
+.search-wrap{position:relative;margin-bottom:16px;}
+.search-wrap input{padding-left:36px;background:#fff;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+.rej-item{
+  background:var(--surface);border-radius:10px;
+  border:1px solid var(--border);margin-bottom:10px;
+  overflow:hidden;transition:all .22s ease;
+}
+.rej-item:hover{border-color:rgba(13,172,191,.3);box-shadow:0 2px 12px rgba(13,172,191,.08);}
+.rej-trigger{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;
+}
+.rej-q{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;}
+.rej-arrow{font-size:13px;color:var(--teal);transition:transform .22s ease;flex-shrink:0;margin-left:10px;}
+.rej-item.open .rej-arrow{transform:rotate(180deg);}
+.rej-body{
+  max-height:0;overflow:hidden;transition:max-height .35s ease;
+}
+.rej-item.open .rej-body{max-height:500px;}
+.rej-content{padding:0 16px 16px;font-size:13px;color:var(--sub);line-height:1.85;border-top:1px solid rgba(13,172,191,.1);}
+.rej-content p+p{margin-top:8px;}
+.rej-key-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.07em;background:rgba(13,172,191,.1);color:var(--teal);padding:2px 8px;border-radius:20px;margin-bottom:8px;margin-top:8px;}
+.no-result{text-align:center;padding:32px 0;color:var(--muted);font-size:13px;}
+
+/* ── HINT ── */
+.hint{background:rgba(236,224,139,.2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:14px;}
+.hint strong{color:var(--green);}
+
+footer{text-align:center;padding:10px 20px 60px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:#90B0B8;}
+@media(max-width:375px){.frow{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
+    返回系統首頁
+  </a>
+  <div class="sys-label">AI 直銷成長作戰系統 · Module 03</div>
+  <h1>AI 招募助手</h1>
+  <p class="header-sub">潛力評估 · 邀約生成 · 拒絕話術庫</p>
+</header>
+
+<!-- MAIN TAB NAV -->
+<div class="main-tabs">
+  <div class="tab-row">
+    <button class="main-tab active" onclick="switchTab('assess',this)">⭐ 潛力評估</button>
+    <button class="main-tab" onclick="switchTab('invite',this)">✉️ 邀約生成</button>
+    <button class="main-tab" onclick="switchTab('reject',this)">🛡 拒絕話術庫</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════════ TAB 1：潛力對象評估 ══════════════ -->
+  <div class="tab-panel active" id="tp-assess">
+    <div class="card">
+      <div class="stag">潛力評估</div>
+      <h2 class="card-title">招募潛力對象評分</h2>
+      <p class="card-desc">依據您對這位對象的了解，在十個維度上進行評估。完成後系統自動給出等級判定與互動建議。</p>
+
+      <div class="fg">
+        <label>評估對象姓名</label>
+        <input type="text" id="assessName" placeholder="請輸入對方姓名或暱稱">
+      </div>
+
+      <div id="dimList">
+
+        <!-- D1 社交活躍度 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">1</div><div class="dim-name">社交活躍度</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d1" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">很少使用社群，朋友圈較小，不常主動聯繫他人</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d1" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">偶爾發文互動，有穩定的朋友圈與日常社交</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d1" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">活躍於多個社群平台，在圈子中有一定影響力</div></div></label>
+          </div>
+        </div>
+
+        <!-- D2 時間彈性 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">2</div><div class="dim-name">時間彈性</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d2" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">行程非常固定，幾乎沒有空閒時間可安排</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d2" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">有部分空閒時間，但不穩定，視情況而定</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d2" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">時間相對自由，可以自主安排，彈性高</div></div></label>
+          </div>
+        </div>
+
+        <!-- D3 收入需求 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">3</div><div class="dim-name">收入需求</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d3" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">收入穩定充裕，目前沒有明顯的額外收入需求</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d3" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">對增加收入有興趣，但沒有急迫感</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d3" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">明確表達想改善收入或財務狀況，有強烈動機</div></div></label>
+          </div>
+        </div>
+
+        <!-- D4 人際影響力 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">4</div><div class="dim-name">人際影響力</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d4" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">在圈子中較被動，少主動影響他人</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d4" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">在特定群體中有一定話語權，朋友偶爾會問其意見</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d4" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">在多個圈子中有明顯影響力，朋友常聽其建議</div></div></label>
+          </div>
+        </div>
+
+        <!-- D5 學習意願 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">5</div><div class="dim-name">學習意願</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d5" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">對新事物持保守態度，較難接受改變</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d5" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">願意學習，但需要時間慢慢適應</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d5" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">主動求知，對新技能和機會有強烈好奇心</div></div></label>
+          </div>
+        </div>
+
+        <!-- D6 積極主動性 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">6</div><div class="dim-name">積極主動性</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d6" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">傾向等待機會找上門，行動力偏弱</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d6" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">有想法但執行力一般，需要適當推動</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d6" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">主動出擊，想到就做，行動力強</div></div></label>
+          </div>
+        </div>
+
+        <!-- D7 家庭支持度 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">7</div><div class="dim-name">家庭支持度</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d7" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">家人對副業或改變持保守或反對態度</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d7" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">家人態度中立，不特別支持也不反對</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d7" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">家人開明且支持，鼓勵嘗試新事物</div></div></label>
+          </div>
+        </div>
+
+        <!-- D8 溝通表達力 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">8</div><div class="dim-name">溝通表達力</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d8" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">內向，不習慣主動與陌生人開口說話</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d8" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">能清楚表達自己的想法，但不擅長說服他人</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d8" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">口才佳，善於表達且具感染力，讓人印象深刻</div></div></label>
+          </div>
+        </div>
+
+        <!-- D9 目標清晰度 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num">9</div><div class="dim-name">目標清晰度</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d9" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">對未來方向模糊，沒有明確的個人目標</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d9" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">有大致方向，但計畫不夠具體</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d9" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">目標明確具體，知道自己想要什麼並積極追求</div></div></label>
+          </div>
+        </div>
+
+        <!-- D10 耐挫力 -->
+        <div class="dim-block">
+          <div class="dim-header"><div class="dim-num" style="background:var(--wine);">10</div><div class="dim-name">耐挫力</div></div>
+          <div class="dim-opts">
+            <label class="dim-opt"><input type="radio" name="d10" value="1">
+              <div class="dim-opt-body"><div class="dim-score-lbl">1 分</div><div class="dim-opt-text">容易因挫折或拒絕而情緒低落，難以持續</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d10" value="2">
+              <div class="dim-opt-body"><div class="dim-score-lbl">2 分</div><div class="dim-opt-text">耐性一般，遇挫折需要鼓勵才能繼續前進</div></div></label>
+            <label class="dim-opt"><input type="radio" name="d10" value="3">
+              <div class="dim-opt-body"><div class="dim-score-lbl">3 分</div><div class="dim-opt-text">抗壓性強，把拒絕當作學習，越挫越勇</div></div></label>
+          </div>
+        </div>
+
+      </div><!-- /dimList -->
+
+      <br>
+      <button class="btn-teal" id="assessBtn" onclick="calcScore()" disabled>計算潛力等級</button>
+    </div>
+
+    <!-- SCORE RESULT -->
+    <div class="score-result" id="scoreResult">
+      <div class="grade-banner" id="gradeBanner">
+        <div class="grade-letter" id="gradeLetter"></div>
+        <div class="grade-title" id="gradeTitle"></div>
+        <div class="grade-sub" id="gradeSub"></div>
+        <div class="score-bar-wrap"><div class="score-bar" id="scoreBar"></div></div>
+        <div class="score-num" id="scoreNum"></div>
+      </div>
+      <div class="strategy-card" id="strategyCard">
+        <div class="strategy-title" id="strategyTitle"></div>
+        <ul class="strategy-list" id="strategyList"></ul>
+      </div>
+      <button class="btn-outline" onclick="resetAssess()">↺ 評估另一位對象</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 2：邀約訊息產生 ══════════════ -->
+  <div class="tab-panel" id="tp-invite">
+    <div class="card">
+      <div class="stag">邀約生成</div>
+      <h2 class="card-title">個人化邀約訊息產生器</h2>
+      <p class="card-desc">填入對象資訊，系統同時生成正式版與輕鬆版兩種語氣的邀約訊息，選擇最適合的那一款直接傳出去。</p>
+
+      <div class="fg">
+        <label>對象姓名 / 稱呼</label>
+        <input type="text" id="inviteName" placeholder="例如：小美、陳姐、Kevin">
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>你們的關係</label>
+          <select id="inviteRel">
+            <option value="">請選擇</option>
+            <option value="friend">好朋友 / 閨蜜</option>
+            <option value="colleague">前同事 / 同學</option>
+            <option value="acquaint">點頭之交 / 普通認識</option>
+            <option value="family">親戚 / 家人</option>
+            <option value="online">網路認識</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>對方目前狀態</label>
+          <select id="inviteStatus">
+            <option value="">請選擇</option>
+            <option value="housewife">全職媽媽 / 家管</option>
+            <option value="unhappy">上班族（對現況不滿）</option>
+            <option value="stable">上班族（穩定但想多收入）</option>
+            <option value="freelance">自由工作者 / 兼職</option>
+            <option value="jobless">剛離職 / 待業中</option>
+            <option value="student">學生</option>
+            <option value="retired">退休 / 半退休</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>邀約切入點</label>
+        <select id="inviteAngle">
+          <option value="">請選擇</option>
+          <option value="income">增加收入 / 財務自由</option>
+          <option value="time">時間彈性 / 自主工作</option>
+          <option value="product">優質產品體驗</option>
+          <option value="growth">個人成長與學習</option>
+          <option value="social">建立人脈與社群</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>可以見面或通話的時間（選填）</label>
+        <input type="text" id="inviteTime" placeholder="例如：這週六下午、明天晚上七點後">
+      </div>
+
+      <button class="btn-teal" id="inviteGenBtn" onclick="genInvite()" disabled>生成邀約訊息</button>
+    </div>
+
+    <div class="msg-output" id="msgOutput">
+      <div class="card" style="padding-bottom:16px;">
+        <div class="stag" style="margin-bottom:12px;">正式版</div>
+        <div class="msg-box"><div class="msg-box-label">適合：點頭之交、前同事、較正式關係</div><div id="msgFormal"></div></div>
+        <button class="copy-msg" id="copyFormal" onclick="copyMsg('msgFormal','copyFormal')">📋 複製正式版</button>
+      </div>
+      <div class="card" style="padding-bottom:16px;">
+        <div class="stag" style="margin-bottom:12px;">輕鬆版</div>
+        <div class="msg-box"><div class="msg-box-label">適合：好友、閨蜜、家人</div><div id="msgCasual"></div></div>
+        <button class="copy-msg" id="copyCasual" onclick="copyMsg('msgCasual','copyCasual')">📋 複製輕鬆版</button>
+      </div>
+      <button class="btn-outline" onclick="resetInvite()">↺ 重新產生</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ TAB 3：拒絕話術庫 ══════════════ -->
+  <div class="tab-panel" id="tp-reject">
+    <div class="card">
+      <div class="stag">拒絕話術庫</div>
+      <h2 class="card-title">十大常見拒絕 × 即時回應</h2>
+      <p class="card-desc">點擊拒絕情境展開對應回應話術，關鍵字搜尋可快速定位。每一句回應都經過實務驗證，直接用就好。</p>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="輸入關鍵字，例如：時間、直銷、朋友關係…" oninput="filterRej()">
+      </div>
+    </div>
+
+    <div id="rejList"></div>
+    <div class="no-result" id="noResult" style="display:none;">找不到符合的情境，請換個關鍵字試試</div>
+  </div>
+
+</main>
+
+<footer>AI 直銷成長作戰系統 v1.0 · 台灣雅芳業務營運處 · Module 03</footer>
+
+<script>
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tp-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   TAB 1 — ASSESSMENT
+   ========================================================= */
+document.querySelectorAll('input[type=radio]').forEach(r => {
+  r.addEventListener('change', () => {
+    const all = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
+    const filled = all.every(n => document.querySelector(`input[name=${n}]:checked`));
+    document.getElementById('assessBtn').disabled = !filled;
+  });
+});
+
+const GRADE_DATA = {
+  A: {
+    cls: 'grade-a', letter: 'A', title: '優先邀約',
+    sub: '這位對象各方面條件都相當理想，是值得重點投入的潛力夥伴。',
+    stClass: 'st-a', stTitle: '建議行動策略',
+    strategies: [
+      '本週內安排一次面對面或視訊的深度對話，不只是傳訊息。',
+      '分享您自己真實的收入成長歷程，用數字說服比用願景說服更有力。',
+      '直接邀請她/他參加下一場說明會或一對一簡報，給出明確的時間。',
+      '準備好回答制度與收入相關問題，這類人通常會深入詢問細節。',
+      '邀約失敗不要緊，追蹤週期設為兩週，持續保持聯繫。',
+    ]
+  },
+  B: {
+    cls: 'grade-b', letter: 'B', title: '培養中',
+    sub: '這位對象有潛力，但目前還需要累積關係與信任，不宜操之過急。',
+    stClass: 'st-b', stTitle: '建議培養策略',
+    strategies: [
+      '先從分享產品開始，讓對方成為您的顧客，再談事業機會。',
+      '每個月至少主動聯繫一次，維持關係熱度但不造成壓力。',
+      '分享您在雅芳的真實生活與收入成長，讓對方看見可能性。',
+      '邀請參加輕鬆的聚會活動，讓她/他認識更多夥伴，降低疑慮。',
+      '追蹤週期設為四至六週，等待時機成熟再正式提出邀約。',
+    ]
+  },
+  C: {
+    cls: 'grade-c', letter: 'C', title: '長期維繫',
+    sub: '目前條件尚未成熟，建議維持良好關係，等待對方生活狀況改變。',
+    stClass: 'st-c', stTitle: '建議長期策略',
+    strategies: [
+      '不主動提直銷事業，以朋友身份自然維繫關係即可。',
+      '可以分享產品，讓她/他先成為您的忠實顧客。',
+      '每季主動聯繫一次，關心生活近況，了解是否有狀況改變。',
+      '若對方主動問起，再自然地介紹事業機會，勿強推。',
+      '這類名單可能在六至十二個月後條件成熟，不要放棄。',
+    ]
+  }
+};
+
+function calcScore() {
+  const dims = ['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10'];
+  const score = dims.reduce((sum, n) => {
+    const r = document.querySelector(`input[name=${n}]:checked`);
+    return sum + (r ? parseInt(r.value) : 0);
+  }, 0);
+
+  const name = document.getElementById('assessName').value || '這位對象';
+  let grade = score >= 24 ? 'A' : score >= 16 ? 'B' : 'C';
+  const d = GRADE_DATA[grade];
+  const pct = Math.round(((score - 10) / 20) * 100);
+
+  const banner = document.getElementById('gradeBanner');
+  banner.className = 'grade-banner ' + d.cls;
+  document.getElementById('gradeLetter').textContent = d.letter;
+  document.getElementById('gradeTitle').textContent = `${name} — ${d.title}`;
+  document.getElementById('gradeSub').textContent = d.sub;
+  document.getElementById('scoreBar').style.width = pct + '%';
+  document.getElementById('scoreNum').textContent = `總分 ${score} / 30 分`;
+
+  const sc = document.getElementById('strategyCard');
+  sc.className = 'strategy-card ' + d.cls;
+  document.getElementById('strategyTitle').textContent = d.stTitle;
+  document.getElementById('strategyTitle').className = 'strategy-title ' + d.stClass;
+  document.getElementById('strategyList').innerHTML =
+    d.strategies.map(s => `<li>${s}</li>`).join('');
+
+  const result = document.getElementById('scoreResult');
+  result.classList.add('visible');
+  setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function resetAssess() {
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.getElementById('assessName').value = '';
+  document.getElementById('assessBtn').disabled = true;
+  document.getElementById('scoreResult').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   TAB 2 — INVITE GENERATOR
+   ========================================================= */
+['inviteName','inviteRel','inviteStatus','inviteAngle'].forEach(id => {
+  document.getElementById(id).addEventListener(id==='inviteName'?'input':'change', checkInviteReady);
+});
+
+function checkInviteReady() {
+  const ok = document.getElementById('inviteName').value.trim()
+    && document.getElementById('inviteRel').value
+    && document.getElementById('inviteStatus').value
+    && document.getElementById('inviteAngle').value;
+  document.getElementById('inviteGenBtn').disabled = !ok;
+}
+
+const ANGLE_TEXT = {
+  income:  { key:'增加收入', hook:'多一份收入來源', detail:'我每個月在維持原本工作的情況下，多賺了一些，想讓你了解這個機會。' },
+  time:    { key:'時間彈性', hook:'自主安排工作時間', detail:'我最喜歡的是它完全不需要打卡，可以配合自己的生活節奏來做，我覺得很適合你現在的狀況。' },
+  product: { key:'優質產品', hook:'先從體驗產品開始', detail:'我最近一直在用雅芳的產品，覺得真的不錯，想讓你也試試看。' },
+  growth:  { key:'個人成長', hook:'同時學習銷售與人際技巧', detail:'我發現在這個過程中，我的溝通能力和自信心都進步很多，你可能也會喜歡這樣的挑戰。' },
+  social:  { key:'擴大人脈', hook:'認識一群積極正向的夥伴', detail:'我加入之後認識了很多很棒的人，圈子變大了，這部分我覺得對你來說也會很有收穫。' },
+};
+
+const STATUS_CONTEXT = {
+  housewife: '你在家帶孩子很辛苦，我知道',
+  unhappy:   '你之前說對工作有點悶',
+  stable:    '你工作穩定，但我知道你也希望能有多一點彈性',
+  freelance: '你本來就習慣彈性工作的方式',
+  jobless:   '你現在這段時間剛好比較有彈性',
+  student:   '你現在正在累積人脈和經驗的階段',
+  retired:   '你現在時間比較自由',
+};
+
+function genInvite() {
+  const name   = document.getElementById('inviteName').value.trim();
+  const rel    = document.getElementById('inviteRel').value;
+  const status = document.getElementById('inviteStatus').value;
+  const angle  = document.getElementById('inviteAngle').value;
+  const time   = document.getElementById('inviteTime').value.trim();
+
+  const a = ANGLE_TEXT[angle];
+  const ctx = STATUS_CONTEXT[status] || '';
+  const timeStr = time ? `，${time}你有空嗎？` : '，你最近有沒有空讓我們聊一下？';
+
+  const isFriend = rel === 'friend' || rel === 'family';
+
+  // Formal version
+  const formal = `您好，${name}，
+
+${ctx ? ctx + '，' : ''}我最近加入了台灣雅芳，是一個專注於${a.key}的機會。${a.detail}
+
+我並不是要你馬上做任何決定，只是想邀請你花 30 分鐘聽我說明一下，你可以自己判斷適不適合。
+
+請問${timeStr}
+
+期待您的回覆，謝謝！`;
+
+  // Casual version
+  const casual = `嘿，${name}！
+
+${ctx ? ctx + '，' : ''}我最近在做一件事，很想讓你知道。我加入了雅芳，主要是因為它可以讓我${a.hook}。${a.detail}
+
+不是要你一定要做什麼，就是覺得你可能也會有興趣了解看看。
+
+我們${timeStr}喝個咖啡聊聊？😊`;
+
+  document.getElementById('msgFormal').innerText = formal;
+  document.getElementById('msgCasual').innerText = casual;
+
+  const out = document.getElementById('msgOutput');
+  out.classList.add('visible');
+  setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function copyMsg(contentId, btnId) {
+  const txt = document.getElementById(contentId).innerText;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById(btnId);
+    const orig = btn.textContent;
+    btn.textContent = '✓ 已複製！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+function resetInvite() {
+  ['inviteName','inviteTime'].forEach(id => document.getElementById(id).value = '');
+  ['inviteRel','inviteStatus','inviteAngle'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inviteGenBtn').disabled = true;
+  document.getElementById('msgOutput').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   TAB 3 — REJECTION LIBRARY
+   ========================================================= */
+const REJECTIONS = [
+  {
+    q: '「我沒有時間，我真的很忙。」',
+    keys: ['時間','忙','沒空'],
+    content: `先同理，再重新定框架：
+
+「我完全理解！其實我加入之前也是這樣說的，因為我那時候也很忙。後來我才發現，這件事的彈性比我想像的大很多——它不是那種需要你每天空出固定時段的工作，而是融入在你原本生活的節奏裡。
+
+我想問你一個問題：你現在滑手機、和朋友聊天的時間，有沒有加起來每天半個小時？其實很多人就是從這個時間開始的。
+
+你願不願意讓我花 20 分鐘說明給你聽，看看它實際上要花你多少時間，再決定適不適合你？」`
+  },
+  {
+    q: '「這是直銷，我不喜歡直銷。」',
+    keys: ['直銷','傳銷','MLM','不喜歡'],
+    content: `不反駁，先承認，再區分差異：
+
+「你說的我懂，我自己加入之前也對直銷有很大的成見。你說的那種直銷——要拉人頭、囤貨、逼朋友買東西——我也不喜歡，我也不會那樣做。
+
+雅芳的模式真的不一樣。它是一個有五十幾年歷史的品牌，我是因為自己用了產品覺得好，才開始分享給認識的朋友。我身邊沒有任何一個朋友因為我做這件事而疏遠我。
+
+我不要求你現在就相信我，但你願不願意讓我先給你看一些真實的數字和我的顧客回饋，讓你自己判斷看看？」`
+  },
+  {
+    q: '「我不會賣東西，我沒有這個天份。」',
+    keys: ['賣東西','業務','天份','個性'],
+    content: `轉換對「銷售」的定義：
+
+「我當初也這樣想，我覺得自己完全不是業務型的人。但後來我發現，我在做的事情根本不像傳統意義上的『賣東西』。
+
+我只是跟朋友分享我自己真的在用的產品，然後告訴她我的真實感受。買不買是她的決定，我沒有辦法也沒有必要強迫任何人。
+
+其實我發現，個性越不像業務的人，反而做起來越自在——因為朋友不會有防備感，會更願意聽你說。你試過之前，怎麼知道自己不適合呢？」`
+  },
+  {
+    q: '「我沒有錢，我不想花錢投資。」',
+    keys: ['沒錢','投資','費用','成本'],
+    content: `先了解疑慮的核心，再說明低門檻：
+
+「我完全理解這個顧慮，我加入之前也很怕投入了之後沒有回報。
+
+雅芳的入門門檻真的不高——主要就是先買幾樣自己想用的產品，之後你自己就是在用這些產品，不是在燒錢。如果你後來決定分享給朋友，你的顧客購買之後，收入可以補回你的使用成本。
+
+我第一個月投入的金額，兩個月後靠銷售收入就全部回本了。
+
+我可以幫你試算一下，最低的入門方案是多少，讓你有個清楚的數字，再決定要不要考慮？」`
+  },
+  {
+    q: '「我的朋友不多，不知道可以找誰買。」',
+    keys: ['朋友','人脈','圈子','找誰'],
+    content: `降低起點，放大可能性：
+
+「這是很多人一開始的擔心，但做了之後才發現，朋友圈比你想的大很多。
+
+你手機裡有多少個聯絡人？Instagram 或 LINE 裡有多少個朋友？很多人盤點下來，第一層就有一兩百人。你不需要全部都變成顧客，通常十個人裡面有一兩個有興趣，就足夠開始了。
+
+另外，我自己的很多顧客是後來慢慢認識的新朋友，不一定都是原本就認識的人。
+
+你願不願意先試試看，做第一個月，讓數字說話？」`
+  },
+  {
+    q: '「我先生 / 太太不支持我做。」',
+    keys: ['先生','太太','家人','另一半','反對'],
+    content: `尊重，不爭辯，提供另一條路：
+
+「家人的支持非常重要，我非常理解你要把這個放在第一位。
+
+我想問你一個問題：他/她反對的原因，主要是覺得這是直銷不可信，還是擔心你花太多時間，還是擔心你花錢投資？不同的原因，其實可以有不同的解方。
+
+有的時候，讓另一半一起來聽說明會，親眼看看、親自提問，效果反而比你轉述要好很多。
+
+或者，你可以先從買產品自己用開始，等有了真實的成效和收入，再讓他/她看見結果。你覺得哪個方式對你們家比較可行？」`
+  },
+  {
+    q: '「我要再考慮一下。」',
+    keys: ['考慮','想想','再說','等等'],
+    content: `找出真正的顧慮，給出明確的下一步：
+
+「好的，完全沒問題，這種決定本來就不應該倉促。
+
+我想幫你把考慮的時間縮短一點——你目前最大的疑問是什麼？是對制度不夠清楚，還是對產品有疑慮，還是還沒想到你的名單？
+
+如果你能告訴我你在猶豫什麼，我可以直接針對那個點解答，不用你花時間一個人想來想去。
+
+然後，你覺得大概多久之後你會有答案？這樣我知道什麼時候再跟你確認。」`
+  },
+  {
+    q: '「我已經有固定工作，不想改變。」',
+    keys: ['工作','穩定','不想改','本業'],
+    content: `釐清「副業」不等於「放棄本業」：
+
+「我沒有要你放棄現在的工作，這是很重要的前提。
+
+雅芳的模式完全可以在你維持現有工作的情況下同時進行——很多我的夥伴都是上班族，她們利用下班時間和週末在做，不影響本業。
+
+而且坦白說，只有一份收入來源，一旦公司有任何變化，風險是很大的。很多人在做第二份收入，不是因為不喜歡現在的工作，而是為了讓自己更有底氣。
+
+你願不願意先花 20 分鐘，了解一下具體的運作方式，再決定適不適合你目前的狀況？」`
+  },
+  {
+    q: '「我怕影響到和朋友之間的關係。」',
+    keys: ['朋友關係','友情','尷尬','影響'],
+    content: `直接承認風險，再分享親身經驗：
+
+「你的顧慮我非常懂，這也是我加入之前最擔心的事。
+
+但我可以告訴你我真實的經驗：我在分享的過程中，從來沒有用強迫的方式，只是自然地告訴朋友我在用什麼、覺得好在哪裡。如果她們有興趣，我就多說一點；如果沒興趣，我就說好的，以後有需要再說。
+
+到目前為止，沒有任何一個朋友因為我做這件事而疏遠我，有幾個反而因為成為我的顧客，我們之間的互動變得更多了。
+
+差別在於你的態度和方式，而不是你做不做。你願不願意讓我說說我怎麼做的？」`
+  },
+  {
+    q: '「我之前做過類似的，結果失敗了。」',
+    keys: ['失敗','做過','之前','沒成功'],
+    content: `先理解經歷，再找到差異點：
+
+「聽到這個我很想多了解一下——你之前做的是什麼品牌，大概是什麼狀況沒有成功？
+
+我問這個不是要反駁你，而是因為失敗的原因其實很不一樣——有時候是制度問題，有時候是時間點不對，有時候是沒有好的支持系統。
+
+如果你願意跟我說說那段經歷，我可以幫你分析一下，雅芳的模式有哪些地方不一樣，或者哪些地方你可能會遇到同樣的問題。我不會只說好聽的，如果我覺得不適合你，我也會直接說。
+
+你願意讓我多了解一下嗎？」`
+  },
+];
+
+function buildRejList(items) {
+  const container = document.getElementById('rejList');
+  container.innerHTML = items.map((r, i) => `
+    <div class="rej-item" id="rej-${i}">
+      <button class="rej-trigger" onclick="toggleRej(${i})">
+        <div class="rej-q">${r.q}</div>
+        <div class="rej-arrow">▼</div>
+      </button>
+      <div class="rej-body">
+        <div class="rej-content">
+          <div class="rej-key-tag">${r.keys.join(' · ')}</div>
+          ${r.content.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleRej(i) {
+  const item = document.getElementById('rej-' + i);
+  item.classList.toggle('open');
+}
+
+function filterRej() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!q) { buildRejList(REJECTIONS); document.getElementById('noResult').style.display='none'; return; }
+  const filtered = REJECTIONS.filter(r =>
+    r.q.toLowerCase().includes(q) ||
+    r.content.toLowerCase().includes(q) ||
+    r.keys.some(k => k.toLowerCase().includes(q))
+  );
+  if (filtered.length) {
+    buildRejList(filtered);
+    document.getElementById('noResult').style.display = 'none';
+    filtered.forEach((_, i) => document.getElementById('rej-' + i).classList.add('open'));
+  } else {
+    document.getElementById('rejList').innerHTML = '';
+    document.getElementById('noResult').style.display = 'block';
+  }
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  buildRejList(REJECTIONS);
+});
+</script>
+</body>
+</html>

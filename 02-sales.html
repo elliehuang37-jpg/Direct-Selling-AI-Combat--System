@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI 銷售助手 — 台灣雅芳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:    #893955;
+  --crimson: #DB2654;
+  --yellow:  #ECE08B;
+  --teal:    #0DACBF;
+  --green:   #0C421E;
+  --cream:   #FDF8FA;
+  --surface: #FFFFFF;
+  --text:    #1C0A14;
+  --sub:     #6A4258;
+  --muted:   #7A5A6A;
+  --border:  #EAD4DE;
+  --r:       12px;
+  --shadow:  0 2px 20px rgba(137,57,85,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--wine) 0%,#6A2840 100%);
+  padding:28px 20px 22px;text-align:center;
+}
+.back-link{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;
+  color:rgba(255,255,255,.55);text-decoration:none;text-transform:uppercase;
+  margin-bottom:16px;transition:color .2s ease;
+}
+.back-link:hover{color:rgba(255,255,255,.9);}
+.sys-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.55);text-transform:uppercase;margin-bottom:8px;}
+header h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;line-height:1.2;letter-spacing:.02em;}
+.header-sub{font-size:12px;font-weight:300;color:rgba(255,255,255,.75);margin-top:6px;letter-spacing:.04em;}
+
+/* ── MAIN ── */
+main{max-width:580px;margin:0 auto;padding:24px 14px 100px;}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:14px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.card-desc{font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:18px;}
+.stag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--green);background:var(--yellow);padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;font-weight:500;}
+
+/* ── SELECTOR STEP ── */
+.selector-step{margin-bottom:24px;}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.step-num{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--wine);color:#fff;
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-q{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);}
+
+.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.opt-btn{
+  padding:13px 10px;background:var(--cream);
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:'Noto Sans TC',sans-serif;font-size:13px;
+  color:var(--sub);cursor:pointer;transition:all .22s ease;
+  text-align:center;line-height:1.4;
+}
+.opt-btn .opt-icon{display:block;font-size:20px;margin-bottom:5px;}
+.opt-btn .opt-lbl{display:block;font-weight:500;color:var(--text);}
+.opt-btn .opt-sub{display:block;font-size:11px;color:var(--muted);margin-top:2px;}
+.opt-btn:hover{border-color:var(--wine);background:#fff;}
+.opt-btn.selected{
+  border-color:var(--wine);background:rgba(137,57,85,.07);
+}
+.opt-btn.selected .opt-lbl{color:var(--wine);}
+
+/* divider */
+.step-divider{border:none;border-top:1px solid var(--border);margin:6px 0 22px;}
+
+/* ── GENERATE BUTTON ── */
+.gen-btn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--wine) 0%,var(--crimson) 100%);
+  color:#fff;border:none;border-radius:10px;
+  font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;
+  cursor:pointer;transition:all .25s ease;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(137,57,85,.35);}
+.gen-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.gen-btn svg{width:17px;height:17px;flex-shrink:0;}
+
+/* selection summary chips */
+.sel-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.sel-chip{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;
+  background:rgba(137,57,85,.1);color:var(--wine);
+  padding:3px 10px;border-radius:20px;
+}
+
+/* ── OUTPUT ── */
+.output-section{display:none;}
+.output-section.visible{display:block;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+.output-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.output-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--text);}
+
+.out-block{
+  background:var(--surface);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;
+}
+.out-block-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;border-bottom:1px solid rgba(137,57,85,.08);
+  background:rgba(137,57,85,.03);
+}
+.out-block-label{
+  display:flex;align-items:center;gap:8px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;
+  color:var(--wine);text-transform:uppercase;font-weight:500;
+}
+.out-block-label .blk-icon{font-size:14px;}
+.copy-one{
+  background:none;border:1px solid var(--border);border-radius:6px;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;
+  color:var(--muted);padding:4px 10px;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+}
+.copy-one:hover{border-color:var(--wine);color:var(--wine);}
+.copy-one.ok{border-color:var(--green);color:var(--green);}
+
+.out-block-body{
+  padding:16px;font-size:13.5px;color:var(--text);
+  line-height:1.85;
+}
+.out-block-body p+p{margin-top:10px;}
+.question-item{
+  display:flex;gap:10px;padding:8px 0;
+  border-bottom:1px dashed rgba(137,57,85,.1);
+}
+.question-item:last-child{border-bottom:none;}
+.q-num{
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--wine);
+  flex-shrink:0;width:18px;margin-top:2px;
+}
+
+/* action row */
+.action-row{display:flex;gap:8px;margin-top:4px;}
+.export-btn{
+  flex:1;padding:12px;
+  background:transparent;border:1.5px solid var(--wine);
+  border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:.06em;color:var(--wine);cursor:pointer;
+  transition:all .22s ease;
+}
+.export-btn:hover{background:var(--wine);color:#fff;}
+.copy-all-btn{
+  flex:2;padding:12px;
+  background:var(--teal);color:#fff;border:none;border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.07em;
+  cursor:pointer;transition:all .22s ease;
+}
+.copy-all-btn:hover{background:#0A9FAF;}
+.copy-all-btn.ok{background:var(--green);}
+
+/* reset btn */
+.reset-btn{
+  width:100%;padding:12px;margin-top:6px;
+  background:transparent;border:1px solid var(--border);border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;
+  color:var(--muted);cursor:pointer;transition:all .22s ease;
+}
+.reset-btn:hover{border-color:var(--crimson);color:var(--crimson);}
+
+/* ── HINT ── */
+.hint{background:rgba(236,224,139,.2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:14px;}
+.hint strong{color:var(--green);}
+
+/* ── NAV ── */
+footer{text-align:center;padding:10px 20px 80px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:#B090A0;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
+    返回系統首頁
+  </a>
+  <div class="sys-label">AI 直銷成長作戰系統 · Module 02</div>
+  <h1>AI 銷售助手</h1>
+  <p class="header-sub">三個維度 · 即時生成 · 一鍵複製 · 直接使用</p>
+</header>
+
+<main>
+
+  <!-- SELECTOR CARD -->
+  <div class="card" id="selectorCard">
+    <div class="stag">情境設定</div>
+    <h2 class="card-title">告訴我這位顧客的狀況</h2>
+    <p class="card-desc">三個問題，30 秒完成。系統依據您的選擇，從內建的話術庫中組合出最適合的銷售腳本。</p>
+
+    <!-- Q1 顧客類型 -->
+    <div class="selector-step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-q">這位顧客是？</div>
+      </div>
+      <div class="option-grid" id="q1">
+        <button class="opt-btn" data-q="q1" data-val="old" onclick="select(this)">
+          <span class="opt-icon">🤝</span>
+          <span class="opt-lbl">老顧客</span>
+          <span class="opt-sub">曾經購買過</span>
+        </button>
+        <button class="opt-btn" data-q="q1" data-val="new" onclick="select(this)">
+          <span class="opt-icon">✨</span>
+          <span class="opt-lbl">新顧客</span>
+          <span class="opt-sub">初次接觸</span>
+        </button>
+        <button class="opt-btn" data-q="q1" data-val="friend" onclick="select(this)">
+          <span class="opt-icon">💛</span>
+          <span class="opt-lbl">親友</span>
+          <span class="opt-sub">熟識的朋友或家人</span>
+        </button>
+        <button class="opt-btn" data-q="q1" data-val="stranger" onclick="select(this)">
+          <span class="opt-icon">🌐</span>
+          <span class="opt-lbl">陌生人</span>
+          <span class="opt-sub">社群或路人接觸</span>
+        </button>
+      </div>
+    </div>
+
+    <hr class="step-divider">
+
+    <!-- Q2 主要需求 -->
+    <div class="selector-step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-q">她 / 他最主要的需求是？</div>
+      </div>
+      <div class="option-grid" id="q2">
+        <button class="opt-btn" data-q="q2" data-val="beauty" onclick="select(this)">
+          <span class="opt-icon">💄</span>
+          <span class="opt-lbl">美容保養</span>
+          <span class="opt-sub">想讓皮膚變好</span>
+        </button>
+        <button class="opt-btn" data-q="q2" data-val="health" onclick="select(this)">
+          <span class="opt-icon">💪</span>
+          <span class="opt-lbl">健康管理</span>
+          <span class="opt-sub">注重身體保健</span>
+        </button>
+        <button class="opt-btn" data-q="q2" data-val="save" onclick="select(this)">
+          <span class="opt-icon">💰</span>
+          <span class="opt-lbl">省錢優惠</span>
+          <span class="opt-sub">對價格很敏感</span>
+        </button>
+        <button class="opt-btn" data-q="q2" data-val="side" onclick="select(this)">
+          <span class="opt-icon">🌱</span>
+          <span class="opt-lbl">副業機會</span>
+          <span class="opt-sub">想多一份收入</span>
+        </button>
+      </div>
+    </div>
+
+    <hr class="step-divider">
+
+    <!-- Q3 抗拒點 -->
+    <div class="selector-step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-q">她 / 他目前最大的抗拒點是？</div>
+      </div>
+      <div class="option-grid" id="q3">
+        <button class="opt-btn" data-q="q3" data-val="expensive" onclick="select(this)">
+          <span class="opt-icon">💸</span>
+          <span class="opt-lbl">太貴了</span>
+          <span class="opt-sub">覺得價格偏高</span>
+        </button>
+        <button class="opt-btn" data-q="q3" data-val="notime" onclick="select(this)">
+          <span class="opt-icon">⏰</span>
+          <span class="opt-lbl">沒有時間</span>
+          <span class="opt-sub">太忙了、沒空</span>
+        </button>
+        <button class="opt-btn" data-q="q3" data-val="trust" onclick="select(this)">
+          <span class="opt-icon">🔍</span>
+          <span class="opt-lbl">不夠信任</span>
+          <span class="opt-sub">對品牌或直銷有疑慮</span>
+        </button>
+        <button class="opt-btn" data-q="q3" data-val="brand" onclick="select(this)">
+          <span class="opt-icon">🏷</span>
+          <span class="opt-lbl">已有品牌</span>
+          <span class="opt-sub">習慣用其他品牌</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hint">
+      💡 <strong>使用提示</strong>：三個問題都選好後，按下「生成話術」，系統會自動為您組合開場白、探索問句、產品推薦、抗拒處理、成交邀請與跟進訊息六個完整區塊。
+    </div>
+
+    <br>
+    <button class="gen-btn" id="genBtn" onclick="generate()" disabled>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 10h12M12 6l4 4-4 4"/>
+        <circle cx="4" cy="10" r="2" fill="currentColor" stroke="none"/>
+      </svg>
+      生成銷售話術腳本
+    </button>
+  </div>
+
+  <!-- OUTPUT SECTION -->
+  <div class="output-section" id="outputSection">
+
+    <div class="output-header">
+      <div>
+        <div class="stag" style="margin-bottom:6px;">話術腳本</div>
+        <div class="output-title" id="outputTitle">銷售腳本已生成</div>
+      </div>
+    </div>
+
+    <div class="sel-summary" id="selSummary"></div>
+
+    <!-- Block 1: 開場白 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">👋</span> 開場白</div>
+        <button class="copy-one" onclick="copyBlock('b1','開場白')">複製</button>
+      </div>
+      <div class="out-block-body" id="b1"></div>
+    </div>
+
+    <!-- Block 2: 需求探索問句 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">🔍</span> 需求探索問句</div>
+        <button class="copy-one" onclick="copyBlock('b2','需求探索問句')">複製</button>
+      </div>
+      <div class="out-block-body" id="b2"></div>
+    </div>
+
+    <!-- Block 3: 產品推薦說明 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">✨</span> 產品推薦說明</div>
+        <button class="copy-one" onclick="copyBlock('b3','產品推薦說明')">複製</button>
+      </div>
+      <div class="out-block-body" id="b3"></div>
+    </div>
+
+    <!-- Block 4: 抗拒處理話術 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">🛡</span> 抗拒處理話術</div>
+        <button class="copy-one" onclick="copyBlock('b4','抗拒處理話術')">複製</button>
+      </div>
+      <div class="out-block-body" id="b4"></div>
+    </div>
+
+    <!-- Block 5: 成交邀請語 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">🎯</span> 成交邀請語</div>
+        <button class="copy-one" onclick="copyBlock('b5','成交邀請語')">複製</button>
+      </div>
+      <div class="out-block-body" id="b5"></div>
+    </div>
+
+    <!-- Block 6: 跟進訊息範本 -->
+    <div class="out-block">
+      <div class="out-block-head">
+        <div class="out-block-label"><span class="blk-icon">🔄</span> 跟進訊息範本</div>
+        <button class="copy-one" onclick="copyBlock('b6','跟進訊息範本')">複製</button>
+      </div>
+      <div class="out-block-body" id="b6"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-row">
+      <button class="export-btn" onclick="exportTxt()">⬇ 匯出 .txt</button>
+      <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()">📋 複製完整腳本</button>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ 重新選擇情境</button>
+  </div>
+
+</main>
+
+<footer>AI 直銷成長作戰系統 v1.0 · 台灣雅芳業務營運處 · Module 02</footer>
+
+<script>
+/* =========================================================
+   SELECTION STATE
+   ========================================================= */
+const SEL = { q1: null, q2: null, q3: null };
+
+const Q_LABELS = {
+  q1: { old:'老顧客', new:'新顧客', friend:'親友', stranger:'陌生人' },
+  q2: { beauty:'美容保養', health:'健康管理', save:'省錢優惠', side:'副業機會' },
+  q3: { expensive:'太貴', notime:'沒時間', trust:'不信任', brand:'已有品牌' },
+};
+
+function select(btn) {
+  const q = btn.dataset.q;
+  const val = btn.dataset.val;
+  // clear same group
+  document.querySelectorAll(`.opt-btn[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  SEL[q] = val;
+  checkReady();
+}
+
+function checkReady() {
+  const ready = SEL.q1 && SEL.q2 && SEL.q3;
+  document.getElementById('genBtn').disabled = !ready;
+}
+
+/* =========================================================
+   SCRIPT DATA
+   ========================================================= */
+
+/* ── OPENERS ── */
+const OPENERS = {
+  old:      '「好久不見！上次買的產品用得還習慣嗎？我最近發現了一款很適合您的新品，想第一個讓您知道。」',
+  new:      '「您好！很高興認識您。我是台灣雅芳的直銷商，最近很多朋友在問我保養的問題，我剛好想跟您分享一下，請問您方便嗎？」',
+  friend:   '「嘿！最近怎麼樣？我有個東西真的很想跟你分享，你最近有沒有在找比較好的保養品／保健品？我最近用了一個，覺得真的不錯。」',
+  stranger: '「您好！不好意思打擾一下，我是雅芳的直銷商，請問您平常有在保養嗎？我這邊有一款最近很多人在用的產品，想讓您參考一下。」',
+};
+
+/* ── QUESTIONS ── */
+const QUESTIONS = {
+  beauty: [
+    '您平常的保養步驟大概是怎麼樣的？有什麼特別在意的肌膚問題嗎？',
+    '您目前用的保養品，有沒有覺得哪個地方沒有達到您的期待？',
+    '如果要挑選一款新的保養品，您最看重的是什麼——成分、效果、還是價格？',
+  ],
+  health: [
+    '您平常有在補充什麼保健品嗎？還是覺得飲食就夠了？',
+    '您最近有沒有覺得哪個身體狀況讓您比較困擾，比如睡眠、精力或消化？',
+    '如果有一款保健品，能幫您解決這個困擾，您覺得什麼樣的形式（錠劑、飲品、粉末）對您來說最方便？',
+  ],
+  save: [
+    '您平常在保養這塊的預算大概是多少？有沒有覺得市面上很多產品CP值不太高？',
+    '您現在用的產品是固定在某個品牌，還是每次都在找性價比更好的選擇？',
+    '如果有一個方案，可以讓您用會員價長期購買，比直接買便宜三到四成，您有興趣了解嗎？',
+  ],
+  side: [
+    '您現在主要的收入來源是什麼？有沒有想過在本業之外，多開一條收入的管道？',
+    '您身邊有沒有在做類似的事情——靠分享產品賺收入的？您對這件事的印象是什麼？',
+    '如果有一個方式，可以讓您在不影響原本生活的情況下，每個月多賺幾千塊，您願意花三十分鐘了解看看嗎？',
+  ],
+};
+
+/* ── PRODUCT RECOMMENDATIONS ── */
+const PRODUCTS = {
+  beauty: `我想推薦雅芳的「鑽石光修護精華」——這是我們目前最熱賣的明星商品。
+
+核心賣點有三個：第一，含高濃度玻尿酸，一抹就能感受到深層補水；第二，添加山茶花精粹，有助於改善膚色不均和細紋；第三，質地輕薄不油膩，很適合台灣的氣候，疊擦防曬也不起屑。
+
+很多顧客用了兩週就說，皮膚變得比較水潤有光澤，朋友都問她最近是不是換了什麼保養品。
+
+我可以先幫您申請一個試用份量，讓您自己感受看看，再決定要不要正式購買，這樣您覺得如何？`,
+
+  health: `我想跟您介紹雅芳的「活力養生精華飲」——這是我們保健系列裡評價最高的品項。
+
+它特別添加了輔酶Q10、B群複合物和植物萃取精華，主要針對三個問題：容易疲勞、睡眠品質不佳、以及腸胃消化偏弱。
+
+很多顧客是上班族或媽媽，喝了兩三週之後明顯感覺精神比較好，下午不再那麼容易昏昏的。它是小包裝的液態飲，一天一包，隨時喝，不用記得配水吞藥丸，對忙碌的人來說很方便。
+
+要不要讓我幫您一份試喝包，自己體驗看看？`,
+
+  save: `我想讓您了解雅芳的「會員購物方案」，這個方案我覺得很適合像您這樣精打細算的人。
+
+簡單說，只要加入我們的直銷會員，您就能以售價的六到七折購買所有產品，等於長期幫自己省下三到四成的保養費用。不需要賣給任何人，就是自己用、自己省。
+
+以我自己為例，我每個月原本在保養品上花大約兩千元，加入之後每個月省下將近七百塊，一年下來就省了八千多元。
+
+這個方案完全不需要囤貨，想買什麼就買什麼，非常彈性。我可以幫您把加入方式的細節整理一份給您，您看完再決定，好嗎？`,
+
+  side: `我想讓您了解雅芳直銷事業的模式——我自己在做，所以我最清楚它實際是怎麼一回事。
+
+它的邏輯很簡單：您用自己用、覺得好的產品，分享給身邊的朋友，朋友購買之後，您就有佣金收入。初期不需要大量投入，也不強迫囤貨，就從自己身邊最信任的三到五個人開始。
+
+我剛開始做的時候，第一個月只聯繫了六個人，就有了第一筆收入。現在每個月大概可以多出一萬到一萬五的兼職收入，同時還在維持原本的工作。
+
+如果您有興趣，我可以花二十分鐘跟您說明完整的制度，包括怎麼計算收入、需要投入多少時間，讓您自己評估看看適不適合。`,
+};
+
+/* ── OBJECTION HANDLING ── */
+const OBJECTIONS = {
+  expensive: {
+    beauty: `「我完全理解您的感覺，第一次看到價格的時候，我自己也愣了一下。
+
+不過我後來算了一筆帳：這一瓶精華液大概可以用兩個月，換算下來一天只要十幾塊錢——比一杯手搖便宜很多，但效果卻是每天看得到的。
+
+而且，如果您選擇以會員價購買，還可以再打七折，整體划算很多。
+
+我建議您先試試看試用包，如果真的有感覺，再決定要不要定期購買，這樣您不用一開始就承擔全額費用。」`,
+
+    health: `「保健品的確不便宜，您這樣想很合理。
+
+但我想換個角度請您思考：如果因為身體狀態不好，影響到工作效率或生活品質，那個隱性成本其實更高。很多顧客原本也是這樣想，但用了一個月後說，光是精神變好、不需要一直喝提神飲料，就已經值回票價了。
+
+我們現在有一個入門組合，是給第一次嘗試的人設計的，價格比單品更優惠，您要不要先從這個開始？」`,
+
+    save: `「您說得對，保養品的費用是一筆不小的開銷。
+
+但這就是為什麼我覺得您應該了解我們的會員方案——加入之後，您之後每次購買都可以以七折左右的價格拿到產品。光是這樣算，用個半年下來，省回來的錢就超過入門費用了。
+
+我可以把完整的試算幫您列出來，讓您看看值不值得，好嗎？」`,
+
+    side: `「我非常理解您的疑慮，這也是我剛開始最擔心的事——萬一投入了錢，卻沒有收入怎麼辦？
+
+所以我想告訴您，雅芳入門的投入非常低，主要就是自己先用產品、認識這個品牌。而且我們的制度是賣出才有收入，不需要囤貨，風險是可控的。
+
+我當初第一個月投入的金額，兩個月後就靠銷售收入回本了。您願意讓我把制度細節解釋給您聽嗎？」`,
+  },
+
+  notime: {
+    beauty: `「時間的問題我真的懂，我自己也是很忙的人。
+
+所以我特別喜歡雅芳這款產品的原因之一，就是它的使用步驟超級簡單——只要在原本的保養步驟中加一個環節，早晚各三十秒，不需要改變任何生活習慣。
+
+我現在可以先幫您整理好一份產品說明，您有空的時候看看就好，不需要特別約時間。對您來說方便嗎？」`,
+
+    health: `「完全沒問題，這款保健飲的設計就是給忙碌的人用的。
+
+一天一小包，撕開就能喝，不需要量杯、不需要煮、也不需要記得配水服用。很多我的顧客都說，放一包在包包裡或辦公桌上，就算再忙也不會忘。
+
+您不需要多花任何時間——它就是設計來融入您現有的生活節奏的。」`,
+
+    save: `「了解您很忙，所以我今天只想花三分鐘讓您知道一件事：有一個方式，可以讓您之後每次買保養品自動省三成，不需要額外做任何事。
+
+您現在願意花三分鐘聽我說嗎？細節我可以整理成文字傳給您，讓您自己找時間看。」`,
+
+    side: `「沒有時間，是我聽到最多的答案，我完全理解。
+
+但我想問您一個問題：您覺得一天花一個小時，可以嗎？因為雅芳的兼職模式，初期只需要這樣的投入——主要就是在您本來就在用的社群媒體上分享，在原本和朋友聊天的過程中提一下，不需要跑業務、不需要開店。
+
+有沒有可能，我們找一個您比較輕鬆的時候，我花二十分鐘跟您說明一下實際的工作方式，讓您自己判斷？」`,
+  },
+
+  trust: {
+    beauty: `「您有這樣的考量，我覺得完全正確——畢竟保養品是要用在臉上的，當然要謹慎。
+
+我想告訴您，雅芳在台灣已經耕耘超過三十年，是全球最大的直銷品牌之一。我自己用了半年，親身感受到效果，才決定加入的。
+
+我不會要求您立刻做任何決定。我可以先給您一個試用包，讓您自己在家用一週，再告訴我感覺怎麼樣。這樣可以嗎？」`,
+
+    health: `「保健品的確需要謹慎，您問得很好。
+
+雅芳的保健系列都有通過台灣食藥署的審核，我可以把相關認證文件傳給您看。另外，我自己也在用，如果您有任何成分上的問題，我可以一一跟您說明。
+
+我不急，我希望您是在了解清楚之後才做決定。我先傳您一份產品說明，您看完有問題再來問我，好嗎？」`,
+
+    save: `「對直銷有疑慮，這太正常了，我剛開始也這樣。
+
+我想跟您說，雅芳的模式和您想像的直銷可能不一樣——它不需要拉人頭，不需要囤貨，也沒有強迫銷售的壓力。我自己當顧客用了一段時間，覺得東西好，才開始分享給朋友。
+
+如果您願意，我可以讓您先以一般消費者的身份買一次，試試產品本身，不需要任何其他承諾。這樣您覺得可以嗎？」`,
+
+    side: `「您對直銷有疑慮，我百分之百理解——在接觸雅芳之前，我自己也是對直銷抱持著很大的問號的。
+
+我加入之後最大的感受就是：這個品牌不一樣，它強調的是產品本身的好，而不是靠人際關係製造壓力。我身邊的朋友知道我在做之後，沒有人因此疏遠我，反而有幾個人後來也成了我的顧客。
+
+我不要求您馬上相信我。能不能讓我傳您一些我真實的顧客分享和收入紀錄，讓您有個具體的參考？」`,
+  },
+
+  brand: {
+    beauty: `「完全理解！找到適合自己的品牌真的不容易，換的確需要理由。
+
+我不是要您完全放棄現在用的，我想建議的是讓雅芳這款進來做補充——它可以搭配您現有的保養流程，針對您目前還沒被解決的那個問題，比如說加強保濕或改善暗沉。
+
+如果效果好，您自然會想多用；如果沒有感覺，就繼續原本的就好。試用包幾乎沒有風險，要不要讓我先給您試試看？」`,
+
+    health: `「有固定品牌是好事，代表您很認真對待自己的健康。
+
+我想讓您思考的是：您現在的保健品，有沒有哪個需求是它沒辦法涵蓋到的？很多人用一個品牌很久之後，會漸漸有一些新的需求出現，而雅芳的保健系列可以做到很好的補充。
+
+您願不願意告訴我，您目前的保健品主要在補什麼？讓我幫您評估看看，雅芳能不能為您加分。」`,
+
+    save: `「您有固定用的品牌，代表您已經知道自己需要什麼——這其實是個很好的基礎。
+
+我想問您的是：您現在這個品牌，有沒有提供忠實顧客的折扣方案？如果沒有，雅芳的會員制度可以讓您用更低的價格，買到同等甚至更好品質的產品。
+
+光是省錢這一點，有沒有讓您願意多了解一下？」`,
+
+    side: `「您固定支持某個品牌，這說明您是個對產品有要求的人——其實這樣的人做直銷特別有說服力。
+
+我想說的不是要您放棄現在的品牌，而是：如果雅芳的產品您用了也喜歡，那它就能成為您的另一條收入管道。兩個不衝突。
+
+很多我的夥伴原本也是其他品牌的忠實用戶，後來試了雅芳，發現某幾款真的很棒，就開始分享，也帶來了額外收入。要不要先讓您試試產品本身？」`,
+  },
+};
+
+/* ── CLOSING INVITES ── */
+const CLOSES = {
+  beauty: '「這樣好不好——我幫您申請一份試用裝，您用一個禮拜，如果有感覺，我們再聊正式購買的方案。完全沒有壓力，您覺得呢？」',
+  health: '「我建議您從一個月份量開始試試，這樣才能給身體足夠的時間感受效果。我可以幫您整理最優惠的入門組合，讓您參考一下，好嗎？」',
+  save:   '「如果您對省錢這件事有興趣，我們可以找個時間，我用十分鐘幫您完整試算一下——看看您每年可以省下多少。您這週什麼時候有空？」',
+  side:   '「我建議我們找一個半小時，我帶您走過完整的說明，讓您自己判斷這件事適不適合您。沒有壓力，不喜歡我們就繼續當朋友。您這週有沒有空？」',
+};
+
+/* ── FOLLOW-UPS ── */
+const FOLLOWUPS = {
+  old: {
+    beauty: '「上次聊到的精華液，您有沒有機會試過了？我最近有一個老顧客專屬的優惠，想第一個讓您知道，有興趣的話告訴我一聲～」',
+    health: '「上次提到的保健飲，您有沒有機會買來試試看？我最近進了一批新品，也想讓您參考，您方便嗎？」',
+    save:   '「上次跟您聊到的會員方案，您有沒有機會看一下？這個月剛好有新人優惠，如果您有考慮，現在入手最划算。」',
+    side:   '「上次跟您分享的副業機會，您有沒有再想想看？這個月我有幾個名額可以重點陪跑，如果您有興趣，我們可以更深入聊一次。」',
+  },
+  new: {
+    beauty: '「您好！我是上次跟您介紹雅芳保養品的直銷商。上次您說有興趣了解更多，不知道您方便的話，我可以幫您準備一份試用組合，讓您先實際體驗一下嗎？」',
+    health: '「您好！我是上次跟您提到雅芳保健品的直銷商。我整理了一份關於那款產品的說明和顧客回饋，請問我可以傳給您看嗎？」',
+    save:   '「您好！我是上次跟您聊到雅芳會員方案的直銷商。我幫您試算了一下，如果以您目前的消費習慣，加入之後每年大概可以省下這個金額——我可以把試算結果傳給您看嗎？」',
+    side:   '「您好！我是上次跟您分享雅芳事業機會的直銷商。我整理了一份更完整的說明，包括真實的收入案例，可以傳給您參考嗎？」',
+  },
+  friend: {
+    beauty: '「嘿！上次跟你提到那個保養品，你有考慮試試看嗎？我這邊有試用包，不如這個週末見面的時候帶給你？」',
+    health: '「嘿！上次說到的保健品，你有沒有去查查看？我最近又認識了幾個用了之後反應不錯的人，如果你有興趣，我可以幫你拿一份試喝包。」',
+    save:   '「嘿！上次說到的省錢方案，你有沒有想過試試看？我幫你估算了一下，以你平常的保養開銷，每年大概可以省不少。要不要見面聊聊？」',
+    side:   '「嘿！上次說到的副業機會，你有沒有再想一下？我最近正好有多一點時間可以帶新人，如果你有興趣，我可以更詳細跟你說明一遍。」',
+  },
+  stranger: {
+    beauty: '「您好！我是之前跟您分享雅芳保養品的直銷商。請問您有沒有機會看一下我傳給您的產品資料呢？如果有任何問題，歡迎隨時問我。」',
+    health: '「您好！我是上次跟您介紹雅芳保健品的直銷商。請問您對那款產品有沒有什麼問題想問？我很樂意幫您解答，也可以幫您申請試用。」',
+    save:   '「您好！我是上次跟您說明雅芳會員方案的直銷商。我整理了一份更清楚的說明，請問我可以傳給您參考嗎？」',
+    side:   '「您好！我是上次提到雅芳事業機會的直銷商。我整理了一份真實直銷商的收入案例，如果您有興趣，我可以傳給您看嗎？」',
+  },
+};
+
+/* =========================================================
+   GENERATE
+   ========================================================= */
+function generate() {
+  const { q1, q2, q3 } = SEL;
+  if (!q1 || !q2 || !q3) return;
+
+  // populate blocks
+  document.getElementById('b1').innerHTML = `<p>${OPENERS[q1]}</p>`;
+
+  const qs = QUESTIONS[q2];
+  document.getElementById('b2').innerHTML = qs.map((q, i) => `
+    <div class="question-item">
+      <div class="q-num">${i + 1}.</div>
+      <div>${q}</div>
+    </div>`).join('');
+
+  document.getElementById('b3').innerHTML = PRODUCTS[q2].split('\n\n').map(p => `<p>${p}</p>`).join('');
+
+  const obj = OBJECTIONS[q3]?.[q2];
+  document.getElementById('b4').innerHTML = obj ? obj.split('\n\n').map(p => `<p>${p}</p>`).join('') : '<p>針對此情境，請依顧客的具體說法靈活回應，核心原則：先同理，再提供具體數據或試用機會。</p>';
+
+  document.getElementById('b5').innerHTML = `<p>${CLOSES[q2]}</p>`;
+  document.getElementById('b6').innerHTML = `<p>${FOLLOWUPS[q1][q2]}</p>`;
+
+  // summary chips
+  document.getElementById('selSummary').innerHTML = [
+    Q_LABELS.q1[q1], Q_LABELS.q2[q2], Q_LABELS.q3[q3]
+  ].map(l => `<span class="sel-chip">${l}</span>`).join('');
+
+  // show output
+  const out = document.getElementById('outputSection');
+  out.classList.add('visible');
+  setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+/* =========================================================
+   COPY UTILITIES
+   ========================================================= */
+function getBlockText(id) {
+  const el = document.getElementById(id);
+  return el.innerText || el.textContent;
+}
+
+function copyBlock(id, label) {
+  const text = getBlockText(id);
+  navigator.clipboard.writeText(text).then(() => {
+    const btns = document.querySelectorAll(`.copy-one`);
+    btns.forEach(b => { if (b.getAttribute('onclick')?.includes(id)) {
+      b.textContent = '✓ 已複製';
+      b.classList.add('ok');
+      setTimeout(() => { b.textContent = '複製'; b.classList.remove('ok'); }, 1800);
+    }});
+  });
+}
+
+function buildFullScript() {
+  const { q1, q2, q3 } = SEL;
+  return [
+    `══════════════════════════════`,
+    `✦  台灣雅芳 ｜ AI 銷售腳本`,
+    `══════════════════════════════`,
+    `情境：${Q_LABELS.q1[q1]} × ${Q_LABELS.q2[q2]} × 抗拒點：${Q_LABELS.q3[q3]}`,
+    `產生時間：${new Date().toLocaleDateString('zh-TW')}`,
+    ``,
+    `【開場白】`,
+    getBlockText('b1'),
+    ``,
+    `【需求探索問句】`,
+    getBlockText('b2'),
+    ``,
+    `【產品推薦說明】`,
+    getBlockText('b3'),
+    ``,
+    `【抗拒處理話術】`,
+    getBlockText('b4'),
+    ``,
+    `【成交邀請語】`,
+    getBlockText('b5'),
+    ``,
+    `【跟進訊息範本】`,
+    getBlockText('b6'),
+    ``,
+    `AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處`,
+    `══════════════════════════════`,
+  ].join('\n');
+}
+
+function copyAll() {
+  const txt = buildFullScript();
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = '✓ 已複製完整腳本！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '📋 複製完整腳本'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function exportTxt() {
+  const txt = buildFullScript();
+  const { q1, q2, q3 } = SEL;
+  const fname = `雅芳銷售腳本_${Q_LABELS.q1[q1]}_${Q_LABELS.q2[q2]}_${new Date().toISOString().slice(0,10)}.txt`;
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+}
+
+function resetAll() {
+  SEL.q1 = SEL.q2 = SEL.q3 = null;
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('outputSection').classList.remove('visible');
+  document.getElementById('selectorCard').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

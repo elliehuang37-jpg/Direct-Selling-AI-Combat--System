@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI 新人啟動系統 — 台灣雅芳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary:    #893955;   /* 酒紅 — 標題漸層起點、已完成步驟 */
+  --color-secondary:  #DB2654;   /* 緋紅 — 漸層終點、焦點框線、場景選中 */
+  --color-accent:     #0DACBF;   /* 青藍 — 主要 CTA 按鈕、核取方塊、日計畫 Tab */
+  --color-yellow:     #ECE08B;   /* 暖黃 — 標籤、提示背景 */
+  --color-green:      #0C421E;   /* 深綠 — 提示框線、強調文字 */
+  --color-warm-gray:  #7A5A6A;   /* 灰玫 — 表單標籤、次要邊框 */
+  --color-cream:      #FDF8FA;   /* 淺暖白 — 頁面背景 */
+  --color-surface:    #FFFFFF;
+  --color-text-main:  #1C0A14;   /* 深棕黑 — 主文字 */
+  --color-text-sub:   #6A4258;   /* 玫瑰灰 — 輔助說明文字 */
+  --radius-card:      12px;
+  --shadow-card:      0 2px 20px rgba(137,57,85,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  background:var(--color-cream);
+  color:var(--color-text-main);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--color-primary) 0%,var(--color-secondary) 100%);
+  padding:28px 20px 22px;
+  text-align:center;
+  position:relative;
+}
+.system-label{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  letter-spacing:.14em;
+  color:rgba(255,255,255,.68);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+header h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:30px;
+  font-weight:600;
+  color:#fff;
+  line-height:1.2;
+  letter-spacing:.02em;
+}
+.header-sub{
+  font-size:12px;
+  font-weight:300;
+  color:rgba(255,255,255,.82);
+  margin-top:6px;
+  letter-spacing:.04em;
+}
+
+/* ── STEP PROGRESS ── */
+.step-progress{
+  background:var(--color-surface);
+  padding:14px 12px 10px;
+  border-bottom:1px solid rgba(137,57,85,.12);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.step-indicators{
+  display:flex;
+  align-items:center;
+  width:max-content;
+  margin:0 auto;
+  padding:0 4px;
+}
+.step-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  cursor:pointer;
+  gap:4px;
+}
+.step-dot{
+  width:30px;height:30px;
+  border-radius:50%;
+  background:#F0E2EA;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;
+  font-size:11px;font-weight:500;
+  color:var(--color-warm-gray);
+  transition:all .25s ease;
+  flex-shrink:0;
+}
+.step-dot.active  {background:var(--color-accent);color:#fff;}
+.step-dot.done    {background:var(--color-primary);color:#fff;}
+.step-lbl{
+  font-size:9px;color:var(--color-warm-gray);
+  white-space:nowrap;font-family:'DM Mono',monospace;
+  letter-spacing:.04em;
+}
+.step-lbl.active{color:var(--color-accent);font-weight:500;}
+.step-conn{
+  width:20px;height:1px;
+  background:#F0E2EA;
+  margin:0 3px 14px;
+  transition:background .25s ease;
+  flex-shrink:0;
+}
+.step-conn.done{background:var(--color-primary);}
+
+/* ── MAIN ── */
+main{
+  max-width:560px;
+  margin:0 auto;
+  padding:20px 14px 100px;
+}
+.step-panel{display:none;}
+.step-panel.active{
+  display:block;
+  animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--color-surface);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow-card);
+  padding:22px 20px;
+  margin-bottom:14px;
+}
+.card-tint{
+  background:linear-gradient(135deg,rgba(137,57,85,.07) 0%,rgba(219,38,84,.04) 100%);
+  border:1px solid rgba(137,57,85,.18);
+}
+.card-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-weight:600;
+  color:var(--color-text-main);
+  margin-bottom:5px;
+}
+.card-desc{
+  font-size:12.5px;color:var(--color-text-sub);
+  line-height:1.7;margin-bottom:18px;
+}
+
+/* ── SECTION TAG ── */
+.stag{
+  display:inline-block;
+  font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:.12em;
+  color:var(--color-green);
+  background:var(--color-yellow);
+  padding:3px 10px;border-radius:20px;
+  margin-bottom:10px;text-transform:uppercase;
+  font-weight:500;
+}
+
+/* ── FORM ── */
+.fg{margin-bottom:16px;}
+.fg label{
+  display:block;
+  font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:.08em;
+  color:var(--color-warm-gray);
+  text-transform:uppercase;margin-bottom:5px;
+}
+input[type=text],input[type=date],
+input[type=number],select,textarea{
+  width:100%;padding:11px 13px;
+  border:1.5px solid #E8D0DA;
+  border-radius:8px;
+  font-family:'Noto Sans TC',sans-serif;
+  font-size:14px;color:var(--color-text-main);
+  background:var(--color-cream);
+  transition:all .22s ease;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--color-secondary);background:#fff;
+}
+textarea{resize:vertical;min-height:76px;line-height:1.65;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── BUTTONS ── */
+.btn-p{
+  background:var(--color-accent);color:#fff;
+  border:none;border-radius:8px;
+  padding:13px 28px;
+  font-family:'DM Mono',monospace;font-size:13px;
+  letter-spacing:.08em;cursor:pointer;
+  transition:all .22s ease;width:100%;
+}
+.btn-p:hover{background:#0A9FAF;transform:translateY(-1px);}
+.btn-s{
+  background:transparent;color:var(--color-secondary);
+  border:1.5px solid var(--color-secondary);
+  border-radius:8px;padding:11px 22px;
+  font-family:'DM Mono',monospace;font-size:12px;
+  letter-spacing:.06em;cursor:pointer;
+  transition:all .22s ease;width:100%;
+}
+.btn-s:hover{background:var(--color-secondary);color:#fff;}
+
+/* ── STEP NAV (fixed bottom) ── */
+.step-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--color-surface);
+  border-top:1px solid rgba(137,57,85,.15);
+  padding:10px 14px 14px;
+  display:flex;gap:10px;z-index:200;
+}
+.step-nav .btn-s{flex:1;padding:12px;}
+.step-nav .btn-p{flex:2;}
+.step-nav .btn-p:only-child{flex:1;}
+
+/* ── GOAL GRID ── */
+.goal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.goal-card{
+  background:var(--color-cream);border-radius:10px;
+  padding:14px 10px;text-align:center;
+  border:1.5px solid transparent;
+  transition:all .22s ease;
+}
+.goal-card:focus-within{border-color:var(--color-secondary);background:rgba(219,38,84,.05);}
+.goal-icon{font-size:22px;margin-bottom:6px;}
+.goal-lbl{font-size:11px;color:var(--color-text-sub);margin-bottom:7px;line-height:1.4;}
+.goal-card input{
+  background:#fff;border:1px solid #E8D0DA;
+  border-radius:6px;padding:7px;
+  font-size:15px;text-align:center;
+  color:var(--color-secondary);font-weight:500;
+}
+
+/* ── CONTACT TABS ── */
+.ctab-row{display:flex;gap:8px;margin-bottom:14px;}
+.ctab{
+  flex:1;padding:10px 6px;
+  background:#F0E2EA;border:none;border-radius:8px;
+  font-family:'Noto Sans TC',sans-serif;font-size:13px;
+  color:var(--color-text-sub);cursor:pointer;
+  transition:all .22s ease;
+}
+.ctab.active{background:var(--color-primary);color:#fff;}
+
+/* ── CONTACT TABLE ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.ctbl{width:100%;border-collapse:collapse;font-size:12px;}
+.ctbl th{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.06em;color:var(--color-warm-gray);
+  padding:7px 5px;text-align:left;
+  border-bottom:1px solid #E8D0DA;white-space:nowrap;
+}
+.ctbl td{padding:5px 4px;vertical-align:middle;}
+.ctbl input,.ctbl select{
+  padding:7px 7px;font-size:12px;
+  border-radius:6px;background:var(--color-cream);
+}
+.ctbl .n-col{width:72px;}
+.ctbl .r-col{width:68px;}
+.ctbl .c-col{width:90px;}
+.ctbl .p-col{width:54px;}
+.del-btn{
+  background:none;border:none;color:#DDB8C8;
+  cursor:pointer;font-size:15px;padding:4px 2px;
+  transition:color .2s ease;
+}
+.del-btn:hover{color:var(--color-secondary);}
+.add-row-btn{
+  width:100%;padding:10px;
+  background:transparent;
+  border:1.5px dashed #E8C8D8;border-radius:8px;
+  font-family:'Noto Sans TC',sans-serif;font-size:12px;
+  color:var(--color-warm-gray);cursor:pointer;
+  margin-top:10px;transition:all .22s ease;
+}
+.add-row-btn:hover{border-color:var(--color-primary);color:var(--color-primary);}
+.chip{
+  display:inline-block;background:var(--color-yellow);
+  color:var(--color-green);font-family:'DM Mono',monospace;
+  font-size:10px;padding:2px 9px;border-radius:20px;
+  font-weight:500;
+}
+.flex-sb{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+
+/* ── DAY PLAN ── */
+.dtab-row{display:flex;gap:6px;margin-bottom:18px;}
+.dtab{
+  flex:1;padding:9px 6px;
+  background:#F0E2EA;border:none;border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:.05em;color:var(--color-text-sub);
+  cursor:pointer;transition:all .22s ease;text-align:center;
+}
+.dtab.active{background:var(--color-accent);color:#fff;}
+.dplan{display:none;}
+.dplan.active{display:block;}
+.day-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 0;border-bottom:1px solid rgba(137,57,85,.09);
+}
+.day-item:last-child{border-bottom:none;}
+.day-item input[type=checkbox]{
+  width:17px;height:17px;flex-shrink:0;margin-top:3px;
+  accent-color:var(--color-accent);cursor:pointer;
+}
+.day-meta{flex:1;}
+.day-num{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--color-accent);letter-spacing:.07em;margin-bottom:3px;
+}
+.day-task{font-size:13.5px;color:var(--color-text-main);line-height:1.55;}
+.day-item.done .day-task{text-decoration:line-through;color:var(--color-warm-gray);}
+
+/* ── SCRIPT ── */
+.scen-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.scen-btn{
+  padding:11px 8px;background:var(--color-cream);
+  border:1.5px solid #E8D0DA;border-radius:8px;
+  font-family:'Noto Sans TC',sans-serif;font-size:12px;
+  color:var(--color-text-sub);cursor:pointer;
+  transition:all .22s ease;text-align:center;
+}
+.scen-btn:hover,.scen-btn.active{
+  background:var(--color-secondary);
+  border-color:var(--color-secondary);color:#fff;
+}
+.script-box{
+  background:linear-gradient(135deg,rgba(137,57,85,.07) 0%,rgba(219,38,84,.05) 100%);
+  border:1px solid rgba(137,57,85,.18);
+  border-radius:10px;padding:16px;
+  margin-bottom:14px;line-height:1.85;font-size:13.5px;
+  color:var(--color-text-main);
+}
+.script-box .slbl{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.1em;color:var(--color-accent);
+  text-transform:uppercase;margin-bottom:10px;
+}
+.scen-last{grid-column:1/-1;}
+
+/* ── REPORT ── */
+.report-box{
+  background:var(--color-cream);
+  border:1px solid #E8D0DA;border-radius:10px;
+  padding:18px;font-size:12.5px;line-height:1.95;
+  color:var(--color-text-main);white-space:pre-wrap;
+  word-break:break-all;max-height:380px;
+  overflow-y:auto;font-family:'Noto Sans TC',sans-serif;
+}
+.copy-btn{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;width:100%;padding:12px;
+  background:var(--color-accent);color:#fff;
+  border:none;border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:12px;
+  letter-spacing:.06em;cursor:pointer;
+  margin-top:12px;transition:all .22s ease;
+}
+.copy-btn:hover{background:#0A9FAF;}
+.copy-btn.copied{background:#0C421E;}
+
+/* ── HINT BOX ── */
+.hint{
+  background:rgba(236,224,139,.18);
+  border-left:3px solid var(--color-green);
+  border-radius:0 8px 8px 0;
+  padding:12px 14px;font-size:12.5px;
+  color:var(--color-text-sub);line-height:1.7;
+  margin-top:14px;
+}
+.hint strong{color:var(--color-green);}
+
+/* ── FINISH CARD ── */
+.finish-steps{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;padding:20px 20px 110px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.1em;color:#B090A0;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:375px){
+  .frow{grid-template-columns:1fr;}
+  .goal-grid{grid-template-columns:1fr 1fr;}
+  header h1{font-size:26px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="system-label">AI 直銷成長作戰系統 &nbsp;·&nbsp; Module 01</div>
+  <h1>AI 新人啟動系統</h1>
+  <p class="header-sub">目標設定 · 名單盤點 · 啟動計畫 · 話術練習 · 回報摘要</p>
+</header>
+
+<div class="step-progress">
+  <div class="step-indicators" id="stepIndicators"></div>
+</div>
+
+<main>
+
+  <!-- ══ STEP 1：新人資料 ══ -->
+  <div class="step-panel active" id="sp-1">
+    <div class="stag">STEP 01</div>
+    <div class="card">
+      <h2 class="card-title">新人基本資料</h2>
+      <p class="card-desc">填寫您的基本資料，系統將依此為您量身打造專屬的啟動計畫。</p>
+
+      <div class="fg">
+        <label>您的姓名</label>
+        <input type="text" id="memberName" placeholder="請輸入您的姓名">
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>加入日期</label>
+          <input type="date" id="joinDate">
+        </div>
+        <div class="fg">
+          <label>所在地區</label>
+          <select id="region">
+            <option value="">請選擇</option>
+            <option>台北市</option><option>新北市</option><option>桃園市</option>
+            <option>台中市</option><option>台南市</option><option>高雄市</option>
+            <option>新竹縣市</option><option>彰化縣</option><option>雲林縣</option>
+            <option>嘉義縣市</option><option>屏東縣</option><option>宜蘭縣</option>
+            <option>花蓮縣</option><option>台東縣</option><option>其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>推薦人姓名</label>
+        <input type="text" id="sponsor" placeholder="您的上線推薦人">
+      </div>
+      <div class="fg">
+        <label>加入雅芳的主要理由</label>
+        <select id="joinReason">
+          <option value="">請選擇</option>
+          <option>增加收入、補貼家用</option>
+          <option>希望有更多時間彈性</option>
+          <option>喜歡雅芳產品，想分享給朋友</option>
+          <option>朋友推薦，想一起做</option>
+          <option>希望建立自己的事業團隊</option>
+          <option>轉職過渡期需要收入</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>您最想達成的事（用自己的話說）</label>
+        <textarea id="personalGoal" placeholder="例如：希望三個月內每月多賺 8,000 元，讓自己更有底氣…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2：啟動目標 ══ -->
+  <div class="step-panel" id="sp-2">
+    <div class="stag">STEP 02</div>
+    <div class="card">
+      <h2 class="card-title">啟動目標設定</h2>
+      <p class="card-desc">設定清楚的數字目標，讓每天的行動都有方向。目標不必完美，誠實面對自己最重要。</p>
+
+      <div class="goal-grid">
+        <div class="goal-card">
+          <div class="goal-icon">💰</div>
+          <div class="goal-lbl">月目標收入（元）</div>
+          <input type="number" id="goalIncome" placeholder="0" min="0">
+        </div>
+        <div class="goal-card">
+          <div class="goal-icon">👥</div>
+          <div class="goal-lbl">目標開發顧客（位）</div>
+          <input type="number" id="goalCustomers" placeholder="0" min="0">
+        </div>
+        <div class="goal-card">
+          <div class="goal-icon">🌱</div>
+          <div class="goal-lbl">目標招募夥伴（位）</div>
+          <input type="number" id="goalRecruits" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>每週能投入的時間</label>
+        <select id="weeklyHours">
+          <option value="">請選擇</option>
+          <option>5 小時以下（利用碎片時間）</option>
+          <option>5–10 小時（每天 1 小時左右）</option>
+          <option>10–20 小時（兼職認真做）</option>
+          <option>20 小時以上（全力衝刺）</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>您最擅長的接觸方式</label>
+        <select id="contactStyle">
+          <option value="">請選擇</option>
+          <option>LINE / 私訊文字</option>
+          <option>電話或語音通話</option>
+          <option>當面拜訪</option>
+          <option>社群媒體發文</option>
+          <option>舉辦小聚活動</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>您目前最擔心的事</label>
+        <select id="mainConcern">
+          <option value="">請選擇</option>
+          <option>不知道怎麼開口跟朋友說</option>
+          <option>怕被拒絕</option>
+          <option>不夠熟悉產品知識</option>
+          <option>時間不夠，難以兼顧</option>
+          <option>不確定能不能真的賺到錢</option>
+          <option>家人或另一半不支持</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card card-tint">
+      <p style="font-size:13px;color:var(--color-text-sub);line-height:1.8;">
+        💡 <strong style="color:var(--color-green);">啟動心法</strong><br>
+        直銷第一個月最重要的任務不是賺錢，而是<strong style="color:var(--color-text-main);">建立習慣</strong>。
+        每天花 30 分鐘聯繫三個人，累積 30 天就是 90 次對話，這就是你的起點。
+      </p>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3：名單盤點 ══ -->
+  <div class="step-panel" id="sp-3">
+    <div class="stag">STEP 03</div>
+    <div class="card">
+      <h2 class="card-title">名單盤點</h2>
+      <p class="card-desc">把腦海中想到的人先寫下來。不需要評估「他會不會買」，只要想到名字就寫。</p>
+
+      <div class="ctab-row">
+        <button class="ctab active" onclick="switchCtab('cust',this)">🛍 潛在顧客</button>
+        <button class="ctab" onclick="switchCtab('recr',this)">🌱 招募對象</button>
+      </div>
+
+      <div id="ctab-cust">
+        <div class="flex-sb">
+          <span style="font-size:12px;color:var(--color-text-sub);">建議至少填寫 10 位</span>
+          <span class="chip" id="cust-count">0 位</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="ctbl">
+            <thead><tr>
+              <th class="n-col">姓名</th>
+              <th class="r-col">關係</th>
+              <th class="c-col">聯絡方式</th>
+              <th class="p-col">等級</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="cust-body"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRow('cust')">＋ 新增一筆</button>
+      </div>
+
+      <div id="ctab-recr" style="display:none;">
+        <div class="flex-sb">
+          <span style="font-size:12px;color:var(--color-text-sub);">建議至少填寫 5 位</span>
+          <span class="chip" id="recr-count">0 位</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="ctbl">
+            <thead><tr>
+              <th class="n-col">姓名</th>
+              <th class="r-col">關係</th>
+              <th class="c-col">聯絡方式</th>
+              <th class="p-col">等級</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="recr-body"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRow('recr')">＋ 新增一筆</button>
+      </div>
+
+      <div class="hint">
+        <strong>等級說明</strong>：A 級 = 近期重點聯繫，最有可能成為顧客或夥伴；
+        B 級 = 有潛力，需要先維繫關係；C 級 = 長期追蹤，時機成熟再接觸。
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4：每日任務 ══ -->
+  <div class="step-panel" id="sp-4">
+    <div class="stag">STEP 04</div>
+    <div class="card">
+      <h2 class="card-title">啟動行動計畫</h2>
+      <p class="card-desc">系統依您的資料產出行動清單，每完成一項就打勾，讓自己保持前進節奏。</p>
+
+      <div class="dtab-row">
+        <button class="dtab active" onclick="switchDtab('d7',this)">7 天啟動</button>
+        <button class="dtab" onclick="switchDtab('d14',this)">14 天深化</button>
+        <button class="dtab" onclick="switchDtab('d30',this)">30 天衝刺</button>
+      </div>
+
+      <div class="dplan active" id="dp-d7" data-key="d7"></div>
+      <div class="dplan"        id="dp-d14" data-key="d14"></div>
+      <div class="dplan"        id="dp-d30" data-key="d30"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 5：話術練習 ══ -->
+  <div class="step-panel" id="sp-5">
+    <div class="stag">STEP 05</div>
+    <div class="card">
+      <h2 class="card-title">話術練習</h2>
+      <p class="card-desc">選擇情境，閱讀範本後在下方用自己的語氣仿寫。熟悉五種情境，就能應對 90% 的日常對話。</p>
+
+      <div class="scen-grid">
+        <button class="scen-btn active" onclick="showScript('intro',this)">👋 自我介紹</button>
+        <button class="scen-btn" onclick="showScript('product',this)">✨ 產品介紹</button>
+        <button class="scen-btn" onclick="showScript('invite',this)">📩 邀約說明</button>
+        <button class="scen-btn" onclick="showScript('objection',this)">🛡 處理疑慮</button>
+        <button class="scen-btn scen-last" onclick="showScript('followup',this)">🔄 後續跟進</button>
+      </div>
+
+      <div class="script-box" id="scriptBox"></div>
+
+      <div class="fg">
+        <label>✍ 仿寫練習 — 用你自己的話說</label>
+        <textarea id="scriptPractice" placeholder="試著用自己的語氣和用詞，重新表達上面的話術。寫得自然比寫得完整更重要……"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 6：主管追蹤摘要 ══ -->
+  <div class="step-panel" id="sp-6">
+    <div class="stag">STEP 06</div>
+    <div class="card">
+      <h2 class="card-title">主管追蹤摘要</h2>
+      <p class="card-desc">根據您填寫的所有內容，自動產生結構化回報表，直接複製傳給您的推薦人或主管。</p>
+
+      <button class="btn-p" onclick="genReport()" style="margin-bottom:14px;">📋 產生回報表</button>
+      <div class="report-box" id="reportBox">點擊「產生回報表」後，內容將顯示於此。</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyReport()">📋 複製回報表</button>
+    </div>
+
+    <div class="card card-tint">
+      <h2 class="card-title" style="font-size:19px;">🎉 啟動設定完成！</h2>
+      <p class="card-desc" style="margin-bottom:0;">
+        您已完成所有步驟。請將回報表傳給推薦人，並從明天開始執行第一個 7 天計畫。
+        每完成一項任務記得回來打勾——成果是一個勾接著一個勾累積出來的。
+      </p>
+      <div class="finish-steps">
+        <button class="btn-s" onclick="goTo(1)">← 返回修改資料</button>
+        <button class="btn-s" onclick="goTo(4)">📅 查看行動計畫</button>
+        <button class="btn-s" onclick="goTo(5)">💬 繼續練習話術</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>AI 直銷成長作戰系統 v1.0 &nbsp;·&nbsp; 台灣雅芳業務營運處 &nbsp;·&nbsp; Phase 1 Static</footer>
+
+<!-- Fixed bottom nav -->
+<div class="step-nav" id="stepNav">
+  <button class="btn-s" id="prevBtn" onclick="goTo(curStep-1)">← 上一步</button>
+  <button class="btn-p" id="nextBtn" onclick="goTo(curStep+1)">下一步 →</button>
+</div>
+
+<script>
+/* =========================================================
+   GLOBAL STATE
+   ========================================================= */
+let curStep = 1;
+const TOTAL = 6;
+const STEP_META = [
+  {icon:'👤',lbl:'資料'},
+  {icon:'🎯',lbl:'目標'},
+  {icon:'📋',lbl:'名單'},
+  {icon:'📅',lbl:'任務'},
+  {icon:'💬',lbl:'話術'},
+  {icon:'📊',lbl:'摘要'},
+];
+let custIdx = 0, recrIdx = 0;
+
+/* =========================================================
+   NAV
+   ========================================================= */
+function goTo(n){
+  if(n<1||n>TOTAL) return;
+  document.getElementById('sp-'+curStep).classList.remove('active');
+  curStep = n;
+  document.getElementById('sp-'+curStep).classList.add('active');
+  renderProgress();
+  updateNav();
+  if(curStep===4) renderDayPlans();
+  if(curStep===5) initScript();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateNav(){
+  document.getElementById('prevBtn').style.display = curStep===1?'none':'block';
+  document.getElementById('nextBtn').textContent   = curStep===TOTAL?'✓ 完成':'下一步 →';
+}
+
+/* =========================================================
+   STEP INDICATOR
+   ========================================================= */
+function renderProgress(){
+  const c = document.getElementById('stepIndicators');
+  c.innerHTML = '';
+  STEP_META.forEach((m,i)=>{
+    const n=i+1;
+    const isDone   = n<curStep;
+    const isActive = n===curStep;
+    const item = document.createElement('div');
+    item.className='step-item';
+    item.onclick=()=>goTo(n);
+    item.innerHTML=`
+      <div class="step-dot ${isActive?'active':''} ${isDone?'done':''}">${isDone?'✓':n}</div>
+      <div class="step-lbl ${isActive?'active':''}">${m.lbl}</div>`;
+    c.appendChild(item);
+    if(i<STEP_META.length-1){
+      const conn=document.createElement('div');
+      conn.className='step-conn'+(isDone?' done':'');
+      c.appendChild(conn);
+    }
+  });
+}
+
+/* =========================================================
+   CONTACT TABLE
+   ========================================================= */
+function addRow(type){
+  const isC = type==='cust';
+  const body = document.getElementById(type+'-body');
+  const id   = isC ? ++custIdx : ++recrIdx;
+  const rowId= type+'-'+id;
+  const tr   = document.createElement('tr');
+  tr.id=rowId;
+  tr.innerHTML=`
+    <td><input type="text" class="n-col" placeholder="姓名"
+        oninput="countRows('${type}')"></td>
+    <td><select class="r-col">
+      <option>家人</option><option>朋友</option><option>同事</option>
+      <option>同學</option><option>鄰居</option><option>社群</option><option>其他</option>
+    </select></td>
+    <td><input type="text" class="c-col" placeholder="LINE/電話"></td>
+    <td><select class="p-col">
+      <option value="B" selected>B 級</option>
+      <option value="A">A 級</option>
+      <option value="C">C 級</option>
+    </select></td>
+    <td><button class="del-btn" onclick="delRow('${rowId}','${type}')">✕</button></td>`;
+  body.appendChild(tr);
+  countRows(type);
+}
+
+function delRow(rowId,type){
+  const r=document.getElementById(rowId);
+  if(r) r.remove();
+  countRows(type);
+}
+
+function countRows(type){
+  const rows=[...document.getElementById(type+'-body').querySelectorAll('input[type=text]')];
+  const filled=rows.filter((_,i)=>i%2===0&&rows[i].value.trim()).length;
+  document.getElementById(type+'-count').textContent=filled+' 位';
+}
+
+function switchCtab(type,btn){
+  document.getElementById('ctab-cust').style.display=type==='cust'?'block':'none';
+  document.getElementById('ctab-recr').style.display=type==='recr'?'block':'none';
+  document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* =========================================================
+   DAY PLANS
+   ========================================================= */
+const DAY_PLANS = {
+  d7:[
+    {day:'Day 1',task:'設定您的雅芳帳號，上傳清晰的大頭照，完成個人簡介欄位。'},
+    {day:'Day 2',task:'深入了解三款主打產品，記錄您最有感覺的一個核心賣點。'},
+    {day:'Day 3',task:'從名單中挑選 3 位 A 級顧客，傳送自我介紹訊息（可用話術練習頁的模板）。'},
+    {day:'Day 4',task:'安排與推薦人的通話或見面，確認您的第一個 30 天目標。'},
+    {day:'Day 5',task:'聯繫 2 位潛在招募對象，以閒聊關心為主，不急著邀約。'},
+    {day:'Day 6',task:'追蹤 Day 3 傳送訊息的回應狀況，依對方需求進行第二次跟進。'},
+    {day:'Day 7',task:'完成第一週小回顧：做到了什麼、下週要改進哪一點，傳給推薦人確認。'},
+  ],
+  d14:[
+    {day:'Day 8', task:'邀請第一位有正向回應的顧客進行產品體驗（試用品或線上介紹皆可）。'},
+    {day:'Day 9', task:'練習「產品介紹話術」，錄音聽自己說一遍，找出不夠自然的地方加以調整。'},
+    {day:'Day 10',task:'再新增 5 位名單，持續擴充顧客庫存，讓名單永遠有新鮮血液。'},
+    {day:'Day 11',task:'整理已聯繫顧客的回饋與狀態，更新名單中的優先等級（A/B/C）。'},
+    {day:'Day 12',task:'完成第一次正式邀約：邀請一位 A 級名單的親友體驗產品或了解機會。'},
+    {day:'Day 13',task:'與推薦人分享兩週進度，請對方給您一個最具體的改進建議。'},
+    {day:'Day 14',task:'完成兩週里程碑回顧，更新本系統的摘要回報表並傳給推薦人。'},
+  ],
+  d30:[
+    {day:'第三週 — 週一',task:'本週目標：完成第一筆訂單成交，專注跟進 A 級顧客的後續需求。'},
+    {day:'第三週 — 週二',task:'開始正式向招募對象分享您加入雅芳後的真實感受與變化。'},
+    {day:'第三週 — 週三',task:'參加推薦人或團隊舉辦的任何培訓或聚會，提升知識也擴大人脈。'},
+    {day:'第三週 — 週四',task:'建立每日固定的聯繫節奏：每天主動接觸至少 3 位名單對象。'},
+    {day:'第三週 — 週五',task:'盤點本週成果：接觸人數、有興趣的比例、下週優先跟進名單。'},
+    {day:'第四週 — 週一',task:'統計本月聯繫總人數、成交人數、招募接觸人數，對比月初設定的目標。'},
+    {day:'第四週 — 週二',task:'檢視哪些話術最有效、哪些情境最常遇到阻礙，調整下個月策略。'},
+    {day:'Day 30',       task:'完成 30 天啟動總回顧，重新設定下一個 30 天的里程碑，規劃進階計畫。'},
+  ]
+};
+
+function renderDayPlans(){
+  const name = document.getElementById('memberName').value || '您';
+  ['d7','d14','d30'].forEach(key=>{
+    const el = document.getElementById('dp-'+key);
+    if(el.dataset.rendered) return;
+    el.innerHTML = DAY_PLANS[key].map((item,i)=>`
+      <div class="day-item" id="ti-${key}-${i}">
+        <input type="checkbox" onchange="toggleTask('ti-${key}-${i}',this.checked)">
+        <div class="day-meta">
+          <div class="day-num">${item.day}</div>
+          <div class="day-task">${item.task}</div>
+        </div>
+      </div>`).join('');
+    el.dataset.rendered='1';
+  });
+}
+
+function toggleTask(id,checked){
+  document.getElementById(id).classList.toggle('done',checked);
+}
+
+function switchDtab(key,btn){
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.dplan').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('dp-'+key).classList.add('active');
+}
+
+/* =========================================================
+   SCRIPTS
+   ========================================================= */
+const SCRIPTS = {
+  intro:{
+    lbl:'自我介紹話術',
+    body:`「你好，我是【姓名】。我最近加入了雅芳，你知道雅芳嗎？它在台灣深耕幾十年了，產品從保養到彩妝都有。我自己在用之後覺得品質真的很好，所以才決定一起來做。我最近在跟幾個比較親近的朋友分享，你有沒有興趣聽我多說一點？」`
+  },
+  product:{
+    lbl:'產品介紹話術',
+    body:`「我最近在用雅芳的（產品名稱），你知道它最特別的地方是什麼嗎？就是它（核心賣點）。我自己用了大概（X 週），最明顯的改變是（具體感受）。而且性價比真的很高，跟外面同等級的產品比起來，差很多。你最近有在找這類產品嗎？我可以讓你先試試看。」`
+  },
+  invite:{
+    lbl:'邀約說明話術',
+    body:`「我最近在做一件事，想讓你知道一下。我加入了雅芳，不是要你一定要買東西，是真的自己在用、然後分享給喜歡的朋友。我覺得很適合你，因為你本來就很注重保養（或：你之前提過想多一點收入）。下週你有沒有空？我請你喝個下午茶，聊個 30 分鐘，不喜歡的話也完全沒關係。」`
+  },
+  objection:{
+    lbl:'處理疑慮話術',
+    body:`疑慮：「這是直銷吧？我不太喜歡直銷。」
+
+回應：「我完全理解你的感覺，我之前也有這個想法。但說真的，我自己用過雅芳的產品之後才改觀的。我現在做的方式很簡單——就是自己在用，然後分享給真正需要的朋友，不會有任何壓力。你如果不喜歡，我也不會一直找你。但至少讓我分享一次，你再決定，好嗎？」`
+  },
+  followup:{
+    lbl:'後續跟進話術',
+    body:`「上次我跟你提到雅芳的事，你後來有沒有想到什麼問題？我最近剛好有一個（優惠 / 試用活動），想說第一個想到你。如果你還在考慮，現在是很好的時機。就算還沒想好也沒關係，我只是想讓你第一個知道，因為你是我比較在乎的朋友。」`
+  }
+};
+
+function initScript(){
+  const firstBtn = document.querySelector('.scen-btn');
+  if(firstBtn) showScript('intro',firstBtn);
+}
+
+function showScript(type,btn){
+  const s = SCRIPTS[type];
+  document.getElementById('scriptBox').innerHTML=`
+    <div class="slbl">${s.lbl}</div>
+    ${s.body.replace(/\n/g,'<br>')}`;
+  document.querySelectorAll('.scen-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* =========================================================
+   REPORT
+   ========================================================= */
+function getVal(id){ return (document.getElementById(id)||{}).value||'（未填寫）'; }
+
+function genReport(){
+  const name     = getVal('memberName');
+  const joinDate = getVal('joinDate');
+  const sponsor  = getVal('sponsor');
+  const region   = getVal('region');
+  const reason   = getVal('joinReason');
+  const goal     = getVal('personalGoal');
+  const income   = getVal('goalIncome');
+  const cust     = getVal('goalCustomers');
+  const recr     = getVal('goalRecruits');
+  const hours    = getVal('weeklyHours');
+  const style    = getVal('contactStyle');
+  const concern  = getVal('mainConcern');
+
+  const custCnt  = document.getElementById('cust-body').children.length;
+  const recrCnt  = document.getElementById('recr-body').children.length;
+  const doneTasks= document.querySelectorAll('.day-item.done').length;
+  const allTasks = document.querySelectorAll('.day-item').length;
+  const today    = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric'});
+
+  const txt = [
+    '══════════════════════════════',
+    '✦  台灣雅芳 ｜ 新人啟動回報表',
+    '══════════════════════════════',
+    `產生時間：${today}`,
+    '',
+    '【一、新人基本資料】',
+    `姓名：${name}`,
+    `加入日期：${joinDate}`,
+    `推薦人：${sponsor}`,
+    `所在地區：${region}`,
+    '',
+    '【二、加入動機與目標】',
+    `主要理由：${reason}`,
+    `個人期望：${goal}`,
+    '',
+    '【三、啟動數字目標】',
+    `月目標收入：NT$ ${income}`,
+    `目標開發顧客：${cust} 位`,
+    `目標招募夥伴：${recr} 位`,
+    `每週投入時間：${hours}`,
+    `主要接觸方式：${style}`,
+    `目前最大擔心：${concern}`,
+    '',
+    '【四、名單盤點狀況】',
+    `潛在顧客名單：已建立 ${custCnt} 筆`,
+    `招募對象名單：已建立 ${recrCnt} 筆`,
+    '',
+    '【五、任務完成進度】',
+    `已完成 ${doneTasks} 項 / 共 ${allTasks} 項任務`,
+    '',
+    '【主管備注欄】',
+    '＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿',
+    '＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿',
+    '',
+    '此回報表由 AI 新人啟動系統自動產生',
+    'AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處',
+    '══════════════════════════════',
+  ].join('\n');
+
+  document.getElementById('reportBox').textContent = txt;
+}
+
+function copyReport(){
+  const txt = document.getElementById('reportBox').textContent;
+  if(!txt||txt.includes('點擊「產生')) { alert('請先點擊「產生回報表」按鈕。'); return; }
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn = document.getElementById('copyBtn');
+    btn.textContent='✓ 已複製到剪貼板！';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.innerHTML='📋 複製回報表'; btn.classList.remove('copied'); },2200);
+  }).catch(()=>{
+    // fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('已複製！');
+  });
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+document.addEventListener('DOMContentLoaded',()=>{
+  // default join date = today
+  const todayISO = new Date().toISOString().split('T')[0];
+  document.getElementById('joinDate').value = todayISO;
+
+  // seed contact rows
+  ['cust','cust','cust','recr','recr'].forEach(t=>addRow(t));
+
+  // render progress and nav
+  renderProgress();
+  updateNav();
+  renderDayPlans();
+  initScript();
+});
+</script>
+</body>
+</html>

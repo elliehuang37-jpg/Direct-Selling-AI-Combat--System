@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI 教育訓練助手 — 台灣雅芳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#893955;--crimson:#DB2654;--yellow:#ECE08B;
+  --teal:#0DACBF;--green:#0C421E;--green-mid:#1A6B38;
+  --cream:#FDF8FA;--surface:#FFFFFF;
+  --text:#1C0A14;--sub:#6A4258;--muted:#7A5A6A;--border:#EAD4DE;
+  --r:12px;--shadow:0 2px 20px rgba(12,66,30,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 100%);padding:28px 20px 22px;text-align:center;}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,.5);text-decoration:none;text-transform:uppercase;margin-bottom:16px;transition:color .2s;}
+.back-link:hover{color:rgba(255,255,255,.9);}
+.sys-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:8px;}
+header h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;letter-spacing:.02em;}
+.header-sub{font-size:12px;font-weight:300;color:rgba(255,255,255,.72);margin-top:6px;letter-spacing:.04em;}
+
+/* ── MAIN TAB NAV ── */
+.main-tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.tab-row{display:flex;max-width:580px;margin:0 auto;}
+.main-tab{flex:1;padding:14px 8px;background:none;border:none;border-bottom:2.5px solid transparent;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--muted);cursor:pointer;transition:all .22s ease;text-align:center;}
+.main-tab.active{border-bottom-color:var(--green);color:var(--green);font-weight:500;}
+
+/* ── MAIN ── */
+main{max-width:580px;margin:0 auto;padding:20px 14px 90px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:14px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.card-desc{font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:18px;}
+.stag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--green);background:var(--yellow);padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;font-weight:500;}
+
+/* ── COURSE TYPE GRID ── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.type-btn{
+  padding:16px 12px;background:var(--cream);
+  border:1.5px solid var(--border);border-radius:10px;
+  cursor:pointer;transition:all .22s ease;text-align:left;
+}
+.type-btn:hover{border-color:var(--green);background:#fff;}
+.type-btn.selected{border-color:var(--green);background:rgba(12,66,30,.06);}
+.type-icon{font-size:22px;margin-bottom:7px;display:block;}
+.type-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text);display:block;margin-bottom:3px;}
+.type-desc{font-size:11px;color:var(--muted);line-height:1.4;display:block;}
+.type-btn.selected .type-name{color:var(--green);}
+
+/* ── FORM ── */
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+input[type=text],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--text);background:var(--cream);transition:all .22s ease;outline:none;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--green);background:#fff;}
+textarea{resize:vertical;min-height:72px;line-height:1.65;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── BUTTONS ── */
+.btn-green{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:center;gap:9px;}
+.btn-green:hover{background:var(--green-mid);transform:translateY(-1px);box-shadow:0 6px 18px rgba(12,66,30,.25);}
+.btn-green:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-outline-g{width:100%;padding:12px;background:transparent;border:1.5px solid var(--green);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--green);cursor:pointer;transition:all .22s ease;margin-top:8px;}
+.btn-outline-g:hover{background:var(--green);color:#fff;}
+
+/* ── OUTPUT BLOCKS ── */
+.output-wrap{display:none;}
+.output-wrap.visible{display:block;animation:fadeUp .35s ease;}
+
+.out-block{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;}
+.out-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(12,66,30,.08);background:rgba(12,66,30,.03);}
+.out-label{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--green);text-transform:uppercase;font-weight:500;}
+.out-icon{font-size:14px;}
+.copy-one{background:none;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--muted);padding:4px 10px;cursor:pointer;transition:all .2s ease;white-space:nowrap;}
+.copy-one:hover{border-color:var(--green);color:var(--green);}
+.copy-one.ok{border-color:var(--green-mid);color:var(--green-mid);}
+
+.out-body{padding:16px;font-size:13.5px;color:var(--text);line-height:1.85;}
+.out-body p+p{margin-top:8px;}
+
+/* timeline for outline */
+.outline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed rgba(12,66,30,.1);}
+.outline-item:last-child{border-bottom:none;}
+.ol-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--green);flex-shrink:0;width:48px;text-align:right;padding-top:3px;}
+.ol-content{flex:1;}
+.ol-title{font-weight:500;color:var(--text);font-size:13.5px;}
+.ol-sub{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.5;}
+
+/* bullet list */
+.pt-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.pt-list li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--sub);line-height:1.6;}
+.pt-list li::before{content:'▸';font-family:'DM Mono',monospace;font-size:11px;color:var(--green);flex-shrink:0;margin-top:2px;}
+
+/* practice questions */
+.pq-item{padding:12px;background:var(--cream);border-radius:8px;margin-bottom:8px;border:1px solid rgba(12,66,30,.1);}
+.pq-item:last-child{margin-bottom:0;}
+.pq-num{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--green);text-transform:uppercase;margin-bottom:5px;}
+.pq-q{font-size:13.5px;color:var(--text);line-height:1.6;}
+
+/* action row */
+.action-row{display:flex;gap:8px;margin-top:4px;}
+.btn-export{flex:1;padding:12px;background:transparent;border:1.5px solid var(--green);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--green);cursor:pointer;transition:all .22s ease;}
+.btn-export:hover{background:var(--green);color:#fff;}
+.btn-copy-all{flex:2;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.07em;cursor:pointer;transition:all .22s ease;}
+.btn-copy-all:hover{background:#0A9FAF;}
+.btn-copy-all.ok{background:var(--green);}
+
+/* ── MORNING MEETING ── */
+.morning-params{display:flex;flex-direction:column;gap:0;}
+.timer-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(12,66,30,.08);border:1px solid rgba(12,66,30,.2);
+  border-radius:20px;padding:4px 12px;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--green);
+  margin-bottom:14px;
+}
+.script-section{margin-bottom:14px;}
+.script-section-head{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  background:rgba(12,66,30,.06);border-radius:8px 8px 0 0;
+  border:1px solid rgba(12,66,30,.12);border-bottom:none;
+}
+.script-min{font-family:'DM Mono',monospace;font-size:10px;color:var(--green);letter-spacing:.08em;white-space:nowrap;}
+.script-sec-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);}
+.script-body{
+  padding:14px 16px;background:var(--surface);
+  border:1px solid rgba(12,66,30,.12);border-radius:0 0 8px 8px;
+  font-size:13.5px;color:var(--text);line-height:1.9;
+}
+.script-body p+p{margin-top:8px;}
+.highlight-num{font-family:'DM Mono',monospace;font-weight:500;color:var(--crimson);}
+
+/* ── HINT ── */
+.hint{background:rgba(236,224,139,.2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:14px;}
+.hint strong{color:var(--green);}
+
+footer{text-align:center;padding:10px 20px 60px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:#8AAA90;}
+@media(max-width:375px){.frow{grid-template-columns:1fr;}.type-grid{grid-template-columns:1fr;}.action-row{flex-direction:column;}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
+    返回系統首頁
+  </a>
+  <div class="sys-label">AI 直銷成長作戰系統 · Module 04</div>
+  <h1>AI 教育訓練助手</h1>
+  <p class="header-sub">課程大綱 · 演練題目 · 晨會腳本 · 課後追蹤</p>
+</header>
+
+<div class="main-tabs">
+  <div class="tab-row">
+    <button class="main-tab active" onclick="switchTab('course',this)">📖 課程產生器</button>
+    <button class="main-tab" onclick="switchTab('morning',this)">🌅 晨會腳本產生器</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════ TAB 1：課程產生器 ══════════ -->
+  <div class="tab-panel active" id="tp-course">
+
+    <div class="card" id="courseSetupCard">
+      <div class="stag">課程設定</div>
+      <h2 class="card-title">選擇課程類型</h2>
+      <p class="card-desc">選擇您要帶的課程類型，填入基本參數，系統即時產出完整的課程計畫，包含大綱、暖場、演練與追蹤表。</p>
+
+      <div class="type-grid" id="typeGrid">
+        <button class="type-btn" data-type="new_intro" onclick="selectType(this)">
+          <span class="type-icon">🎉</span>
+          <span class="type-name">新人說明會</span>
+          <span class="type-desc">品牌介紹、制度說明、啟動引導</span>
+        </button>
+        <button class="type-btn" data-type="product" onclick="selectType(this)">
+          <span class="type-icon">✨</span>
+          <span class="type-name">產品知識培訓</span>
+          <span class="type-desc">成分賣點、顧客問答、銷售切入</span>
+        </button>
+        <button class="type-btn" data-type="sales" onclick="selectType(this)">
+          <span class="type-icon">💬</span>
+          <span class="type-name">銷售技巧課</span>
+          <span class="type-desc">話術演練、開場、探詢、成交</span>
+        </button>
+        <button class="type-btn" data-type="recruit" onclick="selectType(this)">
+          <span class="type-icon">🌱</span>
+          <span class="type-name">招募話術演練</span>
+          <span class="type-desc">邀約腳本、拒絕處理、跟進技巧</span>
+        </button>
+        <button class="type-btn" data-type="leadership" onclick="selectType(this)">
+          <span class="type-icon">🏆</span>
+          <span class="type-name">主管領導力課</span>
+          <span class="type-desc">帶人技巧、夥伴診斷、留才策略</span>
+        </button>
+        <button class="type-btn" data-type="morning_class" onclick="selectType(this)">
+          <span class="type-icon">☀️</span>
+          <span class="type-name">晨會帶領技巧</span>
+          <span class="type-desc">如何帶出高能量、高行動力晨會</span>
+        </button>
+      </div>
+
+      <div class="frow">
+        <div class="fg">
+          <label>預計時長</label>
+          <select id="duration">
+            <option value="">請選擇</option>
+            <option value="30">30 分鐘</option>
+            <option value="60">60 分鐘</option>
+            <option value="90">90 分鐘</option>
+            <option value="120">120 分鐘</option>
+            <option value="180">180 分鐘（半天）</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>學員人數</label>
+          <select id="studentCount">
+            <option value="">請選擇</option>
+            <option value="small">1–5 人（一對小組）</option>
+            <option value="mid">6–15 人（中型培訓）</option>
+            <option value="large">16–30 人（大班課）</option>
+            <option value="xlarge">30 人以上（說明會）</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>學員程度</label>
+        <select id="studentLevel">
+          <option value="">請選擇</option>
+          <option value="new">全新入門（加入未滿一個月）</option>
+          <option value="junior">初學（一至三個月）</option>
+          <option value="mid">有基礎（三至十二個月）</option>
+          <option value="senior">資深（一年以上）</option>
+          <option value="mixed">混合程度</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>這堂課最希望學員帶走的核心訊息</label>
+        <textarea id="coreMsg" placeholder="例如：讓每位新人在課後 24 小時內聯繫第一位潛在顧客…"></textarea>
+      </div>
+
+      <button class="btn-green" id="genCourseBtn" onclick="genCourse()" disabled>
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M12 6l4 4-4 4"/><circle cx="4" cy="10" r="2" fill="currentColor" stroke="none"/></svg>
+        產生課程計畫
+      </button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-wrap" id="courseOutput">
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">📋</span>課程大綱 · 時間分配</div>
+          <button class="copy-one" onclick="copyBlock('outOutline')">複製</button>
+        </div>
+        <div class="out-body" id="outOutline"></div>
+      </div>
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">🎯</span>開場暖場活動</div>
+          <button class="copy-one" onclick="copyBlock('outWarmup')">複製</button>
+        </div>
+        <div class="out-body" id="outWarmup"></div>
+      </div>
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">💡</span>核心內容要點</div>
+          <button class="copy-one" onclick="copyBlock('outPoints')">複製</button>
+        </div>
+        <div class="out-body" id="outPoints"></div>
+      </div>
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">🎭</span>三道演練題目</div>
+          <button class="copy-one" onclick="copyBlock('outPractice')">複製</button>
+        </div>
+        <div class="out-body" id="outPractice"></div>
+      </div>
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">📝</span>學員回家作業</div>
+          <button class="copy-one" onclick="copyBlock('outHW')">複製</button>
+        </div>
+        <div class="out-body" id="outHW"></div>
+      </div>
+
+      <div class="out-block">
+        <div class="out-head">
+          <div class="out-label"><span class="out-icon">🔔</span>課後追蹤提醒</div>
+          <button class="copy-one" onclick="copyBlock('outFollowup')">複製</button>
+        </div>
+        <div class="out-body" id="outFollowup"></div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-export" onclick="exportCourse()">⬇ 匯出 .txt</button>
+        <button class="btn-copy-all" id="copyAllBtn" onclick="copyAllCourse()">📋 複製完整課程計畫</button>
+      </div>
+      <button class="btn-outline-g" onclick="resetCourse()">↺ 重新設定課程</button>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 2：晨會腳本產生器 ══════════ -->
+  <div class="tab-panel" id="tp-morning">
+
+    <div class="card">
+      <div class="stag">晨會腳本</div>
+      <h2 class="card-title">15 分鐘晨會腳本產生器</h2>
+      <p class="card-desc">填入三個關鍵資訊，60 秒產出完整的晨會腳本，讓每一天的開始都充滿能量與方向感。</p>
+
+      <div class="timer-badge">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 5v4l2.5 1.5"/></svg>
+        標準時長 15 分鐘 · 適合每日例行晨會
+      </div>
+
+      <div class="fg">
+        <label>今日主題 / 核心訊息</label>
+        <input type="text" id="mTheme" placeholder="例如：「第一次接觸比完美話術更重要」">
+      </div>
+      <div class="fg">
+        <label>本週重點數字（業績 / 人數 / 目標）</label>
+        <input type="text" id="mNumbers" placeholder="例如：本週目標 5 萬，目前達成 3.2 萬，剩 2 天">
+      </div>
+      <div class="fg">
+        <label>激勵關鍵字（1–3 個詞）</label>
+        <input type="text" id="mKeyword" placeholder="例如：勇敢出發、相信自己、堅持到底">
+      </div>
+      <div class="fg">
+        <label>帶會者姓名（選填）</label>
+        <input type="text" id="mHost" placeholder="例如：Ellie 姐">
+      </div>
+
+      <button class="btn-green" id="genMorningBtn" onclick="genMorning()" disabled>
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M12 6l4 4-4 4"/><circle cx="4" cy="10" r="2" fill="currentColor" stroke="none"/></svg>
+        產生晨會腳本
+      </button>
+    </div>
+
+    <div class="output-wrap" id="morningOutput">
+      <div class="card" style="padding-bottom:4px;">
+        <div class="stag" style="margin-bottom:10px;">晨會腳本</div>
+        <div class="card-title" id="morningTitle" style="margin-bottom:16px;"></div>
+        <div id="morningScriptBody"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn-export" onclick="exportMorning()">⬇ 匯出 .txt</button>
+        <button class="btn-copy-all" id="copyMorningBtn" onclick="copyMorning()">📋 複製晨會腳本</button>
+      </div>
+      <button class="btn-outline-g" onclick="resetMorning()">↺ 重新設定晨會</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>AI 直銷成長作戰系統 v1.0 · 台灣雅芳業務營運處 · Module 04</footer>
+
+<script>
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tp-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   COURSE TYPE SELECTION
+   ========================================================= */
+let selectedType = null;
+
+function selectType(btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedType = btn.dataset.type;
+  checkCourseReady();
+}
+
+['duration','studentCount','studentLevel'].forEach(id => {
+  document.getElementById(id).addEventListener('change', checkCourseReady);
+});
+document.getElementById('coreMsg').addEventListener('input', checkCourseReady);
+
+function checkCourseReady() {
+  const ok = selectedType
+    && document.getElementById('duration').value
+    && document.getElementById('studentCount').value
+    && document.getElementById('studentLevel').value;
+  document.getElementById('genCourseBtn').disabled = !ok;
+}
+
+/* =========================================================
+   COURSE DATA
+   ========================================================= */
+const COURSE_DATA = {
+  new_intro: {
+    name: '新人說明會',
+    outline: [
+      { title: '開場與自我介紹', sub: '帶會者分享自身加入故事，建立信任與共鳴' },
+      { title: '雅芳品牌故事', sub: '品牌歷史、台灣市場現況、產品核心優勢' },
+      { title: '事業制度說明', sub: '佣金計算方式、直銷 vs 加盟差異、常見誤解澄清' },
+      { title: '啟動計畫介紹', sub: '7 天、14 天、30 天的具體行動步驟' },
+      { title: '名單盤點工作坊', sub: '當場填寫潛在顧客與招募名單，寫下第一個 A 級對象' },
+      { title: '現場 Q&A 與後續步驟', sub: '解答疑慮，確認每位新人的下一步行動' },
+    ],
+    warmup: {
+      title: '「三個為什麼」暖場活動',
+      steps: [
+        '請每位學員拿出紙筆，寫下：「我加入雅芳，最主要的原因是＿＿＿」',
+        '再寫：「如果三個月後我成功了，我生活中最大的改變會是＿＿＿」',
+        '最後：「今天結束後，我願意承諾做的第一件事是＿＿＿」',
+        '邀請 2–3 位學員分享，帶會者做正向回應與串聯，約 5 分鐘完成。',
+      ]
+    },
+    points: [
+      '雅芳創立於 1886 年，全球業務遍及 100 多個國家，台灣深耕超過 50 年。',
+      '直銷不等於傳銷：無囤貨壓力、無強迫邀約、產品好才分享的核心精神。',
+      '收入三層架構：個人銷售佣金 → 下線業績分紅 → 領導獎金。',
+      '前三個月是關鍵期：建立習慣比追求大訂單更重要。',
+      '支持系統：推薦人陪跑、團隊培訓、線上學習資源、AI 系統輔助。',
+      '成功的直銷商共同特質：誠實分享自己的親身體驗，而不是銷售話術。',
+    ],
+    practice: [
+      '情境：朋友問你「你做的那個雅芳是不是直銷？直銷不是都很誇張嗎？」請用你自己的話，不超過三句話回應。',
+      '角色扮演：你是新人，推薦人問你「你打算先聯繫名單上的哪三個人？」請說出具體的名字與你打算怎麼開口。',
+      '書面練習：寫下你的「30 秒自我介紹」，包含你是誰、你為什麼加入雅芳、你想幫助什麼樣的人。',
+    ],
+    hw: '課後 24 小時內完成三件事：（1）在名單上圈出你今天要聯繫的第一個 A 級對象；（2）傳一則自我介紹訊息給對方；（3）截圖回傳給推薦人確認。',
+    followup: [
+      '課後 24 小時：確認每位學員是否完成第一次聯繫行動。',
+      '課後 3 天：詢問學員的第一次對話結果，協助處理回應。',
+      '課後 7 天：安排第一次個別追蹤，了解是否遇到困難。',
+      '課後 14 天：邀請學員參加下一次團隊聚會或培訓課程。',
+    ]
+  },
+
+  product: {
+    name: '產品知識培訓',
+    outline: [
+      { title: '開場：我與產品的故事', sub: '帶會者分享親身使用產品的真實改變，建立示範效應' },
+      { title: '本次主打產品深度解析', sub: '成分、功效、使用方法、適合膚質或體質' },
+      { title: '與競品的差異比較', sub: '誠實比較，找出雅芳的不可替代優勢' },
+      { title: '顧客常見問題模擬', sub: '帶領學員練習回答最常被問的十個問題' },
+      { title: '銷售語言轉換練習', sub: '把產品成分翻譯成顧客聽得懂的好處語言' },
+      { title: '試用體驗與感受分享', sub: '當場試用，記錄真實感受，轉化為個人推薦語' },
+    ],
+    warmup: {
+      title: '「第一次用到這個產品」分享暖場',
+      steps: [
+        '請每位學員說出：「我第一次使用這個產品，最讓我驚喜的一點是什麼？」',
+        '如果有學員還沒用過，請分享：「我對這個產品最好奇的一點是什麼？」',
+        '帶會者做整理：歸納學員的答案，找出 2–3 個共同的感受，這就是本堂課的核心賣點。',
+        '約 5 分鐘，目的是讓學員從使用者角度出發，而不是從說明書角度出發。',
+      ]
+    },
+    points: [
+      '產品賣點要從「成分」翻譯成「好處」：玻尿酸→深層補水→一整天不乾燥。',
+      '誠實說出適用範圍：這款適合乾性到混合性膚質，不適合極油性或有特定過敏的人。',
+      '比較競品時，聚焦「差異」而非「好壞」：我們的優勢是 CP 值和會員優惠制度。',
+      '學會使用「第三方見證」：「我的顧客小美用了三週說皮膚明顯變水潤…」。',
+      '準備一套「功效驗證三步驟」：使用前拍照→兩週後對比→分享給顧客看。',
+      '遇到不確定的問題，誠實說：「我再幫您查清楚」，比亂答更能建立信任。',
+    ],
+    practice: [
+      '快問快答：帶會者隨機說出一個成分名稱，學員用一句白話說出它的「好處是什麼」。',
+      '角色扮演：顧客說「我朋友說這個產品用了沒效果」，請用自己的話回應，不攻擊競品，不過度承諾。',
+      '個人挑戰：每位學員用 90 秒，向坐在旁邊的人介紹今天學到的主打產品，對方給一個建議。',
+    ],
+    hw: '回家後完成兩件事：（1）把今天學到的主打產品寫成一段 100 字以內的「個人推薦文」，用自己的用詞；（2）明天找一個朋友，用這段文字練習介紹一次，記錄對方的反應回傳給主管。',
+    followup: [
+      '課後 3 天：確認學員是否完成個人推薦文，並收集回來統一點評。',
+      '課後 7 天：詢問學員使用今天所學向顧客介紹時，遇到哪些問題。',
+      '課後 14 天：安排進階版「產品銷售情境演練」，強化實戰能力。',
+    ]
+  },
+
+  sales: {
+    name: '銷售技巧課',
+    outline: [
+      { title: '銷售心態重建', sub: '「分享」而非「賣」：改變出發點，消除恐懼感' },
+      { title: '五步驟銷售流程總覽', sub: '開場→需求探索→產品說明→抗拒處理→成交邀請' },
+      { title: '開場白與需求探索話術', sub: '如何在三句話內讓對方願意繼續聊' },
+      { title: '抗拒處理情境演練', sub: '太貴、沒時間、已有品牌、不信任的標準回應' },
+      { title: '成交邀請與跟進技巧', sub: '如何自然地結束對話並約定下一步' },
+      { title: '複習與即時應用計畫', sub: '每位學員確認本週要實際使用的一個情境' },
+    ],
+    warmup: {
+      title: '「最難忘的一次被拒絕」分享暖場',
+      steps: [
+        '請學員分享一次在銷售或邀約中被拒絕的經驗，說明當時心情和後來怎麼面對。',
+        '帶會者做總結：拒絕是銷售的一部分，我們今天練習的是如何讓拒絕變成對話的開始，而不是結束。',
+        '用一句話定錨：「今天結束後，你會多一個工具，讓你在面對拒絕時比上週更自在。」',
+        '約 5–8 分鐘，重點是讓學員放鬆、卸下防備，進入學習狀態。',
+      ]
+    },
+    points: [
+      '銷售的本質是幫助：當你真的相信產品對對方有好處，說話方式會完全不同。',
+      '開場白的唯一目的是讓對話繼續：不是要一次說完所有優點。',
+      '需求探索比產品說明更重要：先聽再說，找到對方真正在意的點。',
+      '抗拒話術原則：先同理 → 再提問 → 最後才回應，永遠不要第一句就反駁。',
+      '成交邀請要具體：「你要不要考慮看看」不如「我幫你申請試用包，你用一週再告訴我感覺，好嗎？」',
+      '跟進是銷售的核心競爭力：80% 的成交發生在第四至七次接觸後。',
+    ],
+    practice: [
+      '兩人一組角色扮演：一人扮演顧客說「太貴了」，另一人用今天學到的話術回應，各說一輪後互換，帶會者巡場給回饋。',
+      '即興演練：帶會者隨機指定一位學員，給出一個情境（如：朋友說「我再想想」），學員立即用不超過三句話回應，全班一起點評哪一句最有效。',
+      '書面練習：每位學員寫下自己最常遇到的一種抗拒，以及今天之後要用的新回應方式，交給帶會者留存。',
+    ],
+    hw: '本週找三次機會實際使用今天練習的開場白或抗拒處理話術，不論結果如何，記錄對方的反應，下次上課前傳給主管。',
+    followup: [
+      '課後 3 天：主動詢問學員有沒有機會用上今天練習的話術，提供即時指導。',
+      '課後 7 天：收集學員記錄的實戰經驗，作為下次課程的案例討論素材。',
+      '課後 14 天：安排「進階成交與高單價銷售」課程，鞏固基礎後進階。',
+    ]
+  },
+
+  recruit: {
+    name: '招募話術演練',
+    outline: [
+      { title: '招募心態：為什麼邀約這麼難？', sub: '破解三個常見的招募心理障礙' },
+      { title: '潛力對象辨識與評估', sub: '哪些特質的人最適合做直銷，如何在日常中識別' },
+      { title: '邀約話術三種版本', sub: '正式版、輕鬆版、LINE 訊息版的語言與時機' },
+      { title: '拒絕話術情境演練', sub: '「我沒時間」「這是直銷」「我不擅長賣東西」的標準回應' },
+      { title: '跟進節奏與追蹤策略', sub: '什麼時候追、追多少次、如何不讓對方覺得被騷擾' },
+      { title: '本週招募行動計畫', sub: '每位學員設定本週要邀約的三個名單' },
+    ],
+    warmup: {
+      title: '「我是怎麼被邀進來的」回顧暖場',
+      steps: [
+        '請每位學員回想：當初推薦人怎麼跟你說，讓你決定願意來了解看看？',
+        '學員輪流分享一個關鍵字或一句話，帶會者寫在白板上。',
+        '帶會者做分析：好的邀約，通常有哪些共同元素（真誠、具體、不強迫、有個人感受）？',
+        '用這些關鍵字定錨今天的課程目標，約 5 分鐘。',
+      ]
+    },
+    points: [
+      '最好的邀約不像邀約：它像是朋友在分享一件自己覺得不錯的事。',
+      '邀約的目的不是成交，是「讓對方多了解一次」，降低每次的期待值。',
+      '四種邀約切入點：收入需求、時間彈性、產品興趣、人際連結，選對切入點成功率翻倍。',
+      '面對拒絕的黃金公式：先同理（我理解你說的）→ 再探問（你主要是擔心什麼？）→ 才回應。',
+      '跟進三原則：固定週期（不超過兩週一次）、有新資訊才聯繫、每次都留下下一步。',
+      '最有效的招募工具：你真實的收入截圖與顧客感謝訊息，比任何話術都有說服力。',
+    ],
+    practice: [
+      '情境演練：帶會者扮演對象，說「我對直銷沒興趣」，每位學員用一分鐘回應，全班點評哪句話最打動人。',
+      '兩人一組：一人說出自己名單上的一位真實對象，另一人幫她設計最適合這個人的邀約切入點，說明理由。',
+      '即興挑戰：帶會者說出一種拒絕（沒時間、沒錢、家人反對），學員立即用一句話回應，練習「先同理再探問」的節奏。',
+    ],
+    hw: '本週完成三件事：（1）從名單中選出本週要聯繫的三個人，標記好各自的邀約切入點；（2）傳送邀約訊息並記錄對方的回應；（3）無論成功與否，把過程傳給主管。',
+    followup: [
+      '課後 3 天：確認學員是否開始執行本週邀約計畫，提供即時話術建議。',
+      '課後 7 天：收集學員的邀約實戰案例，在下次課程中做案例討論。',
+      '課後 14 天：追蹤本次學員中是否有成功邀約進入了解階段，安排下一步跟進輔導。',
+    ]
+  },
+
+  leadership: {
+    name: '主管領導力課',
+    outline: [
+      { title: '主管 vs 業務員的思維差異', sub: '從自己做好，到幫別人做好：角色轉換的核心挑戰' },
+      { title: '夥伴分級與個別輔導策略', sub: '四象限分析、不同類型夥伴的陪跑方式' },
+      { title: '有效一對一對話技巧', sub: '不批評、不說教的教練式提問方法' },
+      { title: '團隊士氣管理', sub: '低潮期怎麼帶、峰值期怎麼乘勢、慶功的正確方式' },
+      { title: '留才策略與預警指標', sub: '哪些訊號代表夥伴快要離開，提前介入的話術' },
+      { title: '月度管理節奏建立', sub: '週會、晨會、個別追蹤、月底衝刺的時間表設計' },
+    ],
+    warmup: {
+      title: '「我印象最深的一位主管或老師」反思暖場',
+      steps: [
+        '請每位學員想一個對自己影響最深的主管或老師，說出他/她做了什麼讓你印象深刻。',
+        '帶會者歸納：大家說的關鍵詞中，哪些和「說了什麼」有關，哪些和「怎麼對待我們」有關？',
+        '帶出今天的核心論點：最有影響力的領導者，通常不是說話最多的那個人。',
+        '約 8 分鐘，讓學員從被帶領者的視角，重新看自己的帶領方式。',
+      ]
+    },
+    points: [
+      '主管最重要的工作是：讓夥伴相信自己做得到，而不是替夥伴把事情做掉。',
+      '四象限夥伴管理：明星（高產高意願）→ 激勵維持；潛力股（高意願低產出）→ 技能輔導；老油條（低意願高產出）→ 重燃動機；高風險（低意願低產出）→ 直接對話。',
+      '教練式提問三步驟：「你覺得問題出在哪裡？」→「你上次嘗試了什麼？」→「你希望我怎麼幫你？」',
+      '士氣管理黃金律：慶功要即時、要公開；批評要私下、要具體、要有建設性。',
+      '留才預警五大訊號：出席減少、業績停滯、主動聯繫變少、開始抱怨制度、詢問退出流程。',
+      '管理節奏建立：每天晨會（5–15 分鐘）、每週追蹤（個別）、每月診斷（全隊）。',
+    ],
+    practice: [
+      '案例討論：帶會者描述一位夥伴的狀況（業績三個月停滯、出勤不穩定、態度消極），學員分組討論：這是哪個象限？下一步怎麼做？',
+      '角色扮演：一人扮演主管，一人扮演正在考慮離開的夥伴，主管用教練式提問進行 5 分鐘對話，全班給回饋。',
+      '個人反思：每位學員寫下現在團隊中「最需要你花時間陪跑的一個人」，並說出你打算怎麼做。',
+    ],
+    hw: '本週完成兩件事：（1）對你目前最擔心的一位夥伴，安排一次一對一對話，用今天學到的教練式提問；（2）把對話的重點和她/他的反應記錄下來，下次課程前傳給帶會者。',
+    followup: [
+      '課後 3 天：確認學員是否安排了夥伴一對一對話，提供開場問句建議。',
+      '課後 7 天：收集學員的一對一對話記錄，提供個別指導回饋。',
+      '課後 30 天：追蹤學員的團隊業績和出勤狀況，評估課程成效。',
+    ]
+  },
+
+  morning_class: {
+    name: '晨會帶領技巧',
+    outline: [
+      { title: '晨會的真正目的', sub: '不是報告數字，是點燃一天的行動能量' },
+      { title: '15 分鐘晨會標準結構', sub: '開場 → 數字 → 主題 → 目標 → 激勵收尾，每段的時間控制' },
+      { title: '能量管理：如何帶出高能量氣氛', sub: '聲音、肢體語言、節奏、互動的技巧' },
+      { title: '數字呈現的方式', sub: '如何讓業績數字激勵人而不是嚇人' },
+      { title: '主題分享的選擇與呈現', sub: '什麼樣的內容讓人聽完立刻想行動' },
+      { title: '帶會者即席演練', sub: '每位學員帶領 3 分鐘晨會片段，全班給回饋' },
+    ],
+    warmup: {
+      title: '「最難忘的一次晨會」回顧暖場',
+      steps: [
+        '請每位學員描述：你參加過最有能量的一次晨會，帶會者做了什麼？',
+        '或：你參加過最讓你昏昏欲睡的一次晨會，問題出在哪裡？',
+        '帶會者歸納：好的晨會 vs 無效晨會的關鍵差異是什麼？',
+        '約 5 分鐘，讓學員從參與者的角度理解晨會的設計邏輯。',
+      ]
+    },
+    points: [
+      '晨會的失敗原因 No.1：把晨會當成業績報告會，缺少情感連結與行動激勵。',
+      '能量帶動三工具：聲音語調變化、提問互動（不要只有一個人說話）、短故事分享。',
+      '數字呈現技巧：先說進度（已達成 75%），再說差距（還差 2 萬），再說方法（今天聯繫五個人）。',
+      '主題選擇原則：選「今天用得到」的，而非「道理很大但無法立即執行」的。',
+      '收尾的力量：最後一句話決定大家帶著什麼心情出去，要讓人覺得「我今天做得到」。',
+      '晨會長度控制：15 分鐘是甜蜜點，超過 20 分鐘能量開始下降，寧短勿長。',
+    ],
+    practice: [
+      '即席演練：每位學員抽一個主題卡（如：「今天的目標是…」「我想分享一個故事…」），即興帶 90 秒的晨會片段。',
+      '觀察練習：帶會者示範一段「低能量晨會」和一段「高能量晨會」，學員辨識具體的差異在哪裡。',
+      '設計練習：每位學員設計明天自己要帶的晨會主題與結構，約 5 分鐘，找夥伴練習一輪。',
+    ],
+    hw: '明天的晨會使用今天設計的結構帶一次，帶完後用手機錄音，聽回放並找出一個可以改進的點，傳給帶會者。',
+    followup: [
+      '課後 3 天：聽學員傳回的晨會錄音，提供一個最具體的改善建議。',
+      '課後 14 天：觀察學員帶的晨會品質是否有提升，安排觀摩與點評。',
+    ]
+  }
+};
+
+/* =========================================================
+   GENERATE COURSE
+   ========================================================= */
+function genCourse() {
+  const type    = selectedType;
+  const dur     = parseInt(document.getElementById('duration').value);
+  const count   = document.getElementById('studentCount').value;
+  const level   = document.getElementById('studentLevel').value;
+  const coreMsg = document.getElementById('coreMsg').value.trim();
+  const data    = COURSE_DATA[type];
+
+  // Time allocation per section
+  const secCount = data.outline.length;
+  const warmupT  = Math.min(10, Math.round(dur * 0.1));
+  const practiceT= Math.round(dur * 0.2);
+  const remaining = dur - warmupT - practiceT;
+  const secTime  = Math.floor(remaining / secCount);
+
+  // Build outline HTML
+  let outlineHTML = '';
+  let cumTime = 0;
+  data.outline.forEach((s, i) => {
+    const t = i === 0 ? warmupT : secTime;
+    cumTime += (i === 0 ? 0 : secTime);
+    const start = i === 0 ? 0 : warmupT + (i - 1) * secTime;
+    outlineHTML += `
+      <div class="outline-item">
+        <div class="ol-time">${start}min</div>
+        <div class="ol-content">
+          <div class="ol-title">${s.title}</div>
+          <div class="ol-sub">${s.sub}</div>
+        </div>
+      </div>`;
+  });
+  const practiceStart = dur - practiceT;
+  outlineHTML += `
+    <div class="outline-item">
+      <div class="ol-time">${practiceStart}min</div>
+      <div class="ol-content">
+        <div class="ol-title">互動演練 · Q&amp;A</div>
+        <div class="ol-sub">小組演練、問題解答、行動確認</div>
+      </div>
+    </div>`;
+  document.getElementById('outOutline').innerHTML = outlineHTML;
+
+  // Warmup
+  const wu = data.warmup;
+  document.getElementById('outWarmup').innerHTML = `
+    <p><strong style="color:var(--green);">活動名稱：</strong>${wu.title}</p>
+    <ul class="pt-list" style="margin-top:12px;">
+      ${wu.steps.map(s => `<li>${s}</li>`).join('')}
+    </ul>`;
+
+  // Core points
+  document.getElementById('outPoints').innerHTML = `
+    <ul class="pt-list">
+      ${data.points.map(p => `<li>${p}</li>`).join('')}
+    </ul>
+    ${coreMsg ? `<div class="hint" style="margin-top:14px;"><strong>本堂課核心訊息</strong>：${coreMsg}</div>` : ''}`;
+
+  // Practice
+  document.getElementById('outPractice').innerHTML = data.practice.map((q, i) => `
+    <div class="pq-item">
+      <div class="pq-num">演練 ${i + 1}</div>
+      <div class="pq-q">${q}</div>
+    </div>`).join('');
+
+  // Homework
+  document.getElementById('outHW').innerHTML = `<p>${data.hw}</p>`;
+
+  // Followup
+  document.getElementById('outFollowup').innerHTML = `
+    <ul class="pt-list">
+      ${data.followup.map(f => `<li>${f}</li>`).join('')}
+    </ul>`;
+
+  // Show output
+  const out = document.getElementById('courseOutput');
+  out.classList.add('visible');
+  setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function resetCourse() {
+  selectedType = null;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  ['duration','studentCount','studentLevel'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('coreMsg').value = '';
+  document.getElementById('genCourseBtn').disabled = true;
+  document.getElementById('courseOutput').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyBlock(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText || el.textContent).then(() => {
+    // find the button in the same out-block
+    const btn = el.closest('.out-block').querySelector('.copy-one');
+    if (btn) { btn.textContent = '✓ 已複製'; btn.classList.add('ok'); setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('ok'); }, 1800); }
+  });
+}
+
+function buildCourseText() {
+  const type = selectedType;
+  const data = COURSE_DATA[type] || {};
+  const dur  = document.getElementById('duration').value;
+  const ids  = ['outOutline','outWarmup','outPoints','outPractice','outHW','outFollowup'];
+  const lbls = ['課程大綱 · 時間分配','開場暖場活動','核心內容要點','三道演練題目','學員回家作業','課後追蹤提醒'];
+  const today = new Date().toLocaleDateString('zh-TW');
+  return [
+    '══════════════════════════════',
+    `✦  台灣雅芳 ｜ AI 課程計畫`,
+    '══════════════════════════════',
+    `課程類型：${data.name || ''} · 時長：${dur} 分鐘`,
+    `產生時間：${today}`,
+    '',
+    ...ids.map((id, i) => [`【${lbls[i]}】`, document.getElementById(id).innerText, ''].flat()),
+    'AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處',
+    '══════════════════════════════',
+  ].flat().join('\n');
+}
+
+function copyAllCourse() {
+  navigator.clipboard.writeText(buildCourseText()).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = '✓ 已複製完整課程計畫！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '📋 複製完整課程計畫'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function exportCourse() {
+  const txt = buildCourseText();
+  const data = COURSE_DATA[selectedType] || {};
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `雅芳課程計畫_${data.name || ''}_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+/* =========================================================
+   MORNING MEETING GENERATOR
+   ========================================================= */
+['mTheme','mNumbers','mKeyword'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const ok = document.getElementById('mTheme').value.trim()
+      && document.getElementById('mNumbers').value.trim()
+      && document.getElementById('mKeyword').value.trim();
+    document.getElementById('genMorningBtn').disabled = !ok;
+  });
+});
+
+function genMorning() {
+  const theme   = document.getElementById('mTheme').value.trim();
+  const numbers = document.getElementById('mNumbers').value.trim();
+  const keyword = document.getElementById('mKeyword').value.trim();
+  const host    = document.getElementById('mHost').value.trim() || '各位夥伴';
+  const today   = new Date().toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
+
+  document.getElementById('morningTitle').textContent = `${today} · 晨會腳本`;
+
+  const sections = [
+    {
+      min: '0–2 分鐘', title: '開場集氣',
+      content: `「早安！${host === '各位夥伴' ? '大家早安！' : host + '，早安！'}
+
+今天是${today}，新的一天代表新的機會。
+
+在我們開始之前，我想請大家做一件事——深吸一口氣，把昨天所有的事情先放下，因為今天是全新的 24 小時。
+
+（停頓 3 秒）
+
+好，我們開始今天的晨會！」`
+    },
+    {
+      min: '2–5 分鐘', title: '數字回顧',
+      content: `「來看一下我們的數字。
+
+${numbers}
+
+我想讓大家記住一件事：數字是結果，不是評判。它告訴我們現在在哪裡，更重要的是，它告訴我們今天可以往哪裡走。
+
+（視情況）做得好的：這個進度代表大家上週的每一個聯繫都算數了。
+需要加油的：差距不是問題，問題是今天的行動計畫是什麼。」`
+    },
+    {
+      min: '5–10 分鐘', title: `今日主題：${theme}`,
+      content: `「今天我想跟大家分享一個概念：${theme}。
+
+我為什麼要說這個？因為我觀察到，我們有時候會卡在等待「準備好了」才行動。但直銷的現實是——準備好的那一刻，往往是你打出第一通電話之後，不是之前。
+
+我自己的經驗是：（請在此插入你的真實案例，30 秒內，要有具體細節）
+
+所以今天，我希望大家帶走這一句話：「${theme}」——把這個想法放進口袋，今天遇到猶豫的時候，就拿出來想一下。」`
+    },
+    {
+      min: '10–13 分鐘', title: '今日行動目標',
+      content: `「好，現在我想請每個人設定今天的一個具體目標。
+
+不是「努力」、不是「盡力」——是一個可以在今天睡前打勾確認的動作。
+
+比如：今天聯繫三個名單、傳一則跟進訊息、安排一次面對面。
+
+請大家在心裡確認你的目標。（停頓 5 秒）
+
+有沒有人願意說出來讓大家聽一下？（邀請 1–2 位分享，每人 30 秒）
+
+很好。說出口的目標，完成率是沒說出口的三倍——我們剛剛就增加了彼此的勝算。」`
+    },
+    {
+      min: '13–15 分鐘', title: '激勵收尾',
+      content: `「最後，送給大家今天的三個字：${keyword}。
+
+${keyword}——不是因為條件完美，而是因為今天是你可以做到的。
+
+今天出去，每一個聯繫，都是在為你想要的生活投票。
+
+我們一起，加油！散會！」`
+    }
+  ];
+
+  document.getElementById('morningScriptBody').innerHTML = sections.map(s => `
+    <div class="script-section">
+      <div class="script-section-head">
+        <div class="script-min">${s.min}</div>
+        <div class="script-sec-title">${s.title}</div>
+      </div>
+      <div class="script-body">${s.content.split('\n\n').map(p => `<p>${p.replace(/（/g,'<em style="color:var(--muted);font-size:12px;">（').replace(/）/g,'）</em>')}</p>`).join('')}</div>
+    </div>`).join('');
+
+  const out = document.getElementById('morningOutput');
+  out.classList.add('visible');
+  setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function buildMorningText() {
+  const theme   = document.getElementById('mTheme').value.trim();
+  const numbers = document.getElementById('mNumbers').value.trim();
+  const keyword = document.getElementById('mKeyword').value.trim();
+  const today   = new Date().toLocaleDateString('zh-TW');
+  return [
+    '══════════════════════════════',
+    `✦  台灣雅芳 ｜ 晨會腳本`,
+    '══════════════════════════════',
+    `日期：${today} · 主題：${theme}`,
+    `本週數字：${numbers} · 激勵關鍵字：${keyword}`,
+    '',
+    document.getElementById('morningScriptBody').innerText,
+    '',
+    'AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處',
+    '══════════════════════════════',
+  ].join('\n');
+}
+
+function copyMorning() {
+  navigator.clipboard.writeText(buildMorningText()).then(() => {
+    const btn = document.getElementById('copyMorningBtn');
+    btn.textContent = '✓ 已複製！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '📋 複製晨會腳本'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function exportMorning() {
+  const txt = buildMorningText();
+  const today = new Date().toISOString().slice(0,10);
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `雅芳晨會腳本_${today}.txt`;
+  a.click();
+}
+
+function resetMorning() {
+  ['mTheme','mNumbers','mKeyword','mHost'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('genMorningBtn').disabled = true;
+  document.getElementById('morningOutput').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI 主管培訓工具 — 台灣雅芳</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#893955;--crimson:#DB2654;--yellow:#ECE08B;
+  --teal:#0DACBF;--green:#0C421E;
+  --cream:#FDF8FA;--surface:#FFFFFF;
+  --text:#1C0A14;--sub:#6A4258;--muted:#7A5A6A;--border:#EAD4DE;
+  --r:12px;--shadow:0 2px 20px rgba(137,57,85,.10);
+  /* Quadrant colours */
+  --q-star:#DB2654; --q-rise:#0DACBF; --q-vet:#893955; --q-risk:#0C421E;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,var(--wine) 0%,var(--crimson) 100%);padding:28px 20px 22px;text-align:center;}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,.5);text-decoration:none;text-transform:uppercase;margin-bottom:16px;transition:color .2s;}
+.back-link:hover{color:#fff;}
+.sys-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:8px;}
+header h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#fff;letter-spacing:.02em;}
+.header-sub{font-size:12px;font-weight:300;color:rgba(255,255,255,.72);margin-top:6px;letter-spacing:.04em;}
+
+/* ── MAIN TABS ── */
+.main-tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.tab-row{display:flex;max-width:580px;margin:0 auto;}
+.main-tab{flex:1;padding:14px 6px;background:none;border:none;border-bottom:2.5px solid transparent;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.05em;color:var(--muted);cursor:pointer;transition:all .22s ease;text-align:center;line-height:1.4;}
+.main-tab.active{border-bottom-color:var(--crimson);color:var(--crimson);font-weight:500;}
+
+/* ── MAIN ── */
+main{max-width:580px;margin:0 auto;padding:20px 14px 90px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:14px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.card-desc{font-size:12.5px;color:var(--sub);line-height:1.7;margin-bottom:18px;}
+.stag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--green);background:var(--yellow);padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;font-weight:500;}
+
+/* ── FORM ── */
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+input[type=text],input[type=number],select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--text);background:var(--cream);transition:all .22s ease;outline:none;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus{border-color:var(--crimson);background:#fff;}
+.frow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── MEMBER CARD ── */
+.member-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;transition:border-color .22s ease;}
+.member-card.active-card{border-color:var(--crimson);}
+.member-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;background:rgba(137,57,85,.03);}
+.member-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--muted);margin-right:10px;}
+.member-name-display{font-size:14px;font-weight:500;color:var(--text);flex:1;}
+.member-arrow{font-size:12px;color:var(--muted);transition:transform .22s ease;}
+.member-card.open .member-arrow{transform:rotate(180deg);}
+.member-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.member-card.open .member-body{max-height:600px;}
+.member-form{padding:14px 16px 16px;}
+
+/* dimension radio group */
+.dim-row{margin-bottom:14px;}
+.dim-row label.dim-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;display:block;}
+.radio-opts{display:flex;gap:6px;flex-wrap:wrap;}
+.radio-opt{flex:1;min-width:0;}
+.radio-opt input{display:none;}
+.radio-opt span{
+  display:block;padding:8px 4px;
+  background:var(--cream);border:1.5px solid var(--border);border-radius:7px;
+  font-size:11.5px;color:var(--sub);cursor:pointer;transition:all .2s ease;
+  text-align:center;line-height:1.3;white-space:nowrap;
+}
+.radio-opt input:checked + span{border-color:var(--crimson);background:rgba(219,38,84,.07);color:var(--crimson);font-weight:500;}
+
+.del-member{background:none;border:none;color:#E0C8C0;cursor:pointer;font-size:16px;padding:4px;transition:color .2s ease;flex-shrink:0;}
+.del-member:hover{color:var(--crimson);}
+
+.add-member-btn{width:100%;padding:11px;background:transparent;border:1.5px dashed var(--border);border-radius:9px;font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;transition:all .22s ease;}
+.add-member-btn:hover{border-color:var(--wine);color:var(--wine);}
+
+/* ── BUTTONS ── */
+.btn-main{width:100%;padding:14px;background:linear-gradient(135deg,var(--wine) 0%,var(--crimson) 100%);color:#fff;border:none;border-radius:10px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:all .25s ease;display:flex;align-items:center;justify-content:center;gap:9px;}
+.btn-main:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(219,38,84,.30);}
+.btn-main:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-outline{width:100%;padding:12px;background:transparent;border:1.5px solid var(--wine);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--wine);cursor:pointer;transition:all .22s ease;margin-top:8px;}
+.btn-outline:hover{background:var(--wine);color:#fff;}
+
+/* ── QUADRANT DISPLAY ── */
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.q-card{border-radius:10px;padding:16px;border:1.5px solid transparent;}
+.q-star{background:rgba(219,38,84,.06);border-color:rgba(219,38,84,.2);}
+.q-rise{background:rgba(13,172,191,.06);border-color:rgba(13,172,191,.2);}
+.q-vet {background:rgba(137,57,85,.06);border-color:rgba(137,57,85,.2);}
+.q-risk{background:rgba(12,66,30,.06);border-color:rgba(12,66,30,.2);}
+
+.q-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.q-star .q-label{color:var(--q-star);}
+.q-rise .q-label{color:var(--q-rise);}
+.q-vet  .q-label{color:var(--q-vet);}
+.q-risk .q-label{color:var(--q-risk);}
+
+.q-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:10px;}
+.q-members{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;}
+.q-member-tag{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;}
+.q-star .q-member-tag{background:rgba(219,38,84,.12);color:var(--q-star);}
+.q-rise .q-member-tag{background:rgba(13,172,191,.12);color:var(--q-rise);}
+.q-vet  .q-member-tag{background:rgba(137,57,85,.12);color:var(--q-vet);}
+.q-risk .q-member-tag{background:rgba(12,66,30,.12);color:var(--q-risk);}
+.q-empty{font-size:11px;color:var(--muted);font-style:italic;}
+
+/* strategy accordion */
+.strategy-block{background:var(--surface);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.strategy-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;transition:background .2s ease;}
+.strategy-head:hover{background:var(--cream);}
+.strategy-icon{font-size:18px;margin-right:10px;}
+.strategy-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;flex:1;}
+.strategy-count{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:20px;margin-left:8px;}
+.s-star .strategy-count{background:rgba(219,38,84,.1);color:var(--q-star);}
+.s-rise .strategy-count{background:rgba(13,172,191,.1);color:var(--q-rise);}
+.s-vet  .strategy-count{background:rgba(137,57,85,.1);color:var(--q-vet);}
+.s-risk .strategy-count{background:rgba(12,66,30,.1);color:var(--q-risk);}
+.s-arr{font-size:12px;color:var(--muted);transition:transform .22s ease;}
+.strategy-block.open .s-arr{transform:rotate(180deg);}
+.strategy-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.strategy-block.open .strategy-body{max-height:800px;}
+.strategy-content{padding:4px 16px 16px;border-top:1px solid var(--border);}
+.s-desc{font-size:13px;color:var(--sub);line-height:1.75;margin-bottom:12px;}
+.s-actions{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.s-actions li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--sub);line-height:1.6;}
+.s-actions li::before{content:'→';font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;margin-top:3px;}
+.s-star .s-actions li::before{color:var(--q-star);}
+.s-rise .s-actions li::before{color:var(--q-rise);}
+.s-vet  .s-actions li::before{color:var(--q-vet);}
+.s-risk .s-actions li::before{color:var(--q-risk);}
+
+/* priority list */
+.priority-card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:14px;}
+.priority-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:14px;}
+.priority-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(137,57,85,.08);}
+.priority-item:last-child{border-bottom:none;}
+.p-rank{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;}
+.p-1{background:var(--crimson);}
+.p-2{background:var(--wine);}
+.p-3{background:var(--teal);}
+.p-4{background:var(--green);}
+.p-content{flex:1;}
+.p-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.p-action{font-size:13px;color:var(--text);line-height:1.55;}
+
+/* copy bar */
+.copy-bar{display:flex;gap:8px;margin-top:4px;}
+.btn-export{flex:1;padding:12px;background:transparent;border:1.5px solid var(--wine);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--wine);cursor:pointer;transition:all .22s ease;}
+.btn-export:hover{background:var(--wine);color:#fff;}
+.btn-copy{flex:2;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.07em;cursor:pointer;transition:all .22s ease;}
+.btn-copy:hover{background:#0A9FAF;}
+.btn-copy.ok{background:var(--green);}
+
+/* ── RISK ASSESSMENT ── */
+.risk-q-item{margin-bottom:12px;}
+.risk-q-text{font-size:13.5px;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.risk-yn{display:flex;gap:8px;}
+.risk-yn button{
+  flex:1;padding:10px;background:var(--cream);
+  border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;
+  color:var(--sub);cursor:pointer;transition:all .2s ease;
+}
+.risk-yn .yes-btn.active{background:rgba(219,38,84,.1);border-color:var(--crimson);color:var(--crimson);}
+.risk-yn .no-btn.active{background:rgba(12,66,30,.1);border-color:var(--green);color:var(--green);}
+.risk-divider{border:none;border-top:1px solid var(--border);margin:4px 0 14px;}
+
+/* risk result */
+.risk-result{display:none;}
+.risk-result.visible{display:block;animation:fadeUp .35s ease;}
+.risk-banner{border-radius:12px;padding:22px;text-align:center;margin-bottom:14px;}
+.risk-low {background:rgba(12,66,30,.07);border:1.5px solid rgba(12,66,30,.2);}
+.risk-mid {background:rgba(184,149,106,.1);border:1.5px solid rgba(184,149,106,.3);}
+.risk-high{background:rgba(219,38,84,.08);border:1.5px solid rgba(219,38,84,.25);}
+.risk-icon{font-size:36px;margin-bottom:8px;}
+.risk-level{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;margin-bottom:4px;}
+.risk-low  .risk-level{color:var(--green);}
+.risk-mid  .risk-level{color:#B8800A;}
+.risk-high .risk-level{color:var(--crimson);}
+.risk-score-lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.07em;color:var(--muted);}
+.risk-bar-wrap{background:#EAD4DE;border-radius:20px;height:7px;margin:12px 0 4px;overflow:hidden;}
+.risk-bar{height:100%;border-radius:20px;transition:width .6s ease;}
+.risk-low  .risk-bar{background:var(--green);}
+.risk-mid  .risk-bar{background:#D4920A;}
+.risk-high .risk-bar{background:var(--crimson);}
+
+.intervention-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:18px;margin-bottom:12px;}
+.intervention-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.risk-low  .intervention-title{color:var(--green);}
+.risk-mid  .intervention-title{color:#B8800A;}
+.risk-high .intervention-title{color:var(--crimson);}
+.intervention-script{font-size:13.5px;color:var(--text);line-height:1.9;}
+.intervention-script p+p{margin-top:8px;}
+
+/* ── HINT ── */
+.hint{background:rgba(236,224,139,.2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:14px;}
+.hint strong{color:var(--green);}
+
+footer{text-align:center;padding:10px 20px 60px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:#B090A0;}
+@media(max-width:400px){.frow{grid-template-columns:1fr 1fr;}.frow2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-link">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 8H3M7 4l-4 4 4 4"/></svg>
+    返回系統首頁
+  </a>
+  <div class="sys-label">AI 直銷成長作戰系統 · Module 05</div>
+  <h1>AI 主管培訓工具</h1>
+  <p class="header-sub">團隊健診 · 象限分析 · 留才風險評估</p>
+</header>
+
+<div class="main-tabs">
+  <div class="tab-row">
+    <button class="main-tab active" onclick="switchTab('input',this)">🔬 團隊健診</button>
+    <button class="main-tab" id="tab-analysis" onclick="switchTab('analysis',this)">📊 象限分析</button>
+    <button class="main-tab" onclick="switchTab('risk',this)">🔐 留才評估</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════ TAB 1：團隊健診 ══════════ -->
+  <div class="tab-panel active" id="tp-input">
+
+    <div class="card">
+      <div class="stag">團隊健診</div>
+      <h2 class="card-title">團隊基本資料</h2>
+      <p class="card-desc">填入您的團隊概況，再逐一為每位夥伴做分級評估，系統自動生成四象限分析與本月主管工作重點。</p>
+
+      <div class="frow">
+        <div class="fg">
+          <label>團隊人數</label>
+          <input type="number" id="teamSize" placeholder="人" min="1" max="50">
+        </div>
+        <div class="fg">
+          <label>平均業齡（月）</label>
+          <input type="number" id="avgTenure" placeholder="月" min="0">
+        </div>
+        <div class="fg">
+          <label>本月達成率 %</label>
+          <input type="number" id="achievement" placeholder="%" min="0" max="200">
+        </div>
+      </div>
+      <div class="fg">
+        <label>主管姓名</label>
+        <input type="text" id="managerName" placeholder="您的姓名或稱呼">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title" style="font-size:18px;margin-bottom:4px;">夥伴逐一評估</h2>
+      <p class="card-desc">每位夥伴評估四個維度，系統依評估結果自動分配象限。</p>
+
+      <div id="memberList"></div>
+      <button class="add-member-btn" onclick="addMember()">＋ 新增一位夥伴</button>
+
+      <div class="hint" style="margin-top:16px;">
+        💡 <strong>評估原則</strong>：依據您近三個月對這位夥伴的實際觀察填寫，不需要完美，誠實的評估才能帶出準確的策略建議。
+      </div>
+    </div>
+
+    <button class="btn-main" id="analyzeBtn" onclick="runAnalysis()" disabled>
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h12M12 6l4 4-4 4"/><circle cx="4" cy="10" r="2" fill="currentColor" stroke="none"/></svg>
+      生成象限分析
+    </button>
+  </div>
+
+  <!-- ══════════ TAB 2：象限分析 ══════════ -->
+  <div class="tab-panel" id="tp-analysis">
+
+    <div class="card">
+      <div class="stag">象限分析</div>
+      <h2 class="card-title">團隊四象限全覽</h2>
+      <p class="card-desc" id="analysisSub">完成健診後，您的團隊成員將自動分配至以下四個象限。</p>
+      <div class="q-grid" id="quadrantGrid">
+        <div class="q-card q-star"><div class="q-label">高產出 · 高意願</div><div class="q-title">⭐ 明星夥伴</div><div class="q-members"><span class="q-empty">尚無</span></div></div>
+        <div class="q-card q-rise"><div class="q-label">低產出 · 高意願</div><div class="q-title">🌱 潛力股</div><div class="q-members"><span class="q-empty">尚無</span></div></div>
+        <div class="q-card q-vet" ><div class="q-label">高產出 · 低意願</div><div class="q-title">🛡 資深穩定</div><div class="q-members"><span class="q-empty">尚無</span></div></div>
+        <div class="q-card q-risk"><div class="q-label">低產出 · 低意願</div><div class="q-title">⚠️ 高風險</div><div class="q-members"><span class="q-empty">尚無</span></div></div>
+      </div>
+    </div>
+
+    <!-- Strategy blocks -->
+    <div id="strategyBlocks"></div>
+
+    <!-- Monthly priority -->
+    <div class="priority-card" id="priorityCard" style="display:none;">
+      <div class="priority-title">📅 本月主管工作重點</div>
+      <div id="priorityList"></div>
+    </div>
+
+    <div class="copy-bar">
+      <button class="btn-export" onclick="exportAnalysis()">⬇ 匯出 .txt</button>
+      <button class="btn-copy" id="copyAnalysisBtn" onclick="copyAnalysis()">📋 複製分析報告</button>
+    </div>
+    <button class="btn-outline" onclick="goReset()">↺ 重新健診</button>
+  </div>
+
+  <!-- ══════════ TAB 3：留才評估 ══════════ -->
+  <div class="tab-panel" id="tp-risk">
+
+    <div class="card">
+      <div class="stag">留才評估</div>
+      <h2 class="card-title">夥伴離開風險評估</h2>
+      <p class="card-desc">針對您目前最擔心的一位夥伴，回答以下問題，系統即時計算離開風險指數並提供介入建議。</p>
+
+      <div class="fg">
+        <label>評估對象姓名</label>
+        <input type="text" id="riskName" placeholder="請輸入夥伴姓名或暱稱">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title" style="font-size:17px;margin-bottom:14px;">請依實際觀察選擇</h2>
+
+      <div id="riskQuestions"></div>
+
+      <button class="btn-main" id="calcRiskBtn" onclick="calcRisk()" style="margin-top:6px;" disabled>計算離開風險指數</button>
+    </div>
+
+    <div class="risk-result" id="riskResult">
+      <div class="risk-banner" id="riskBanner">
+        <div class="risk-icon" id="riskIcon"></div>
+        <div class="risk-level" id="riskLevel"></div>
+        <div class="risk-score-lbl" id="riskScoreLbl"></div>
+        <div class="risk-bar-wrap"><div class="risk-bar" id="riskBar"></div></div>
+      </div>
+      <div class="intervention-card" id="interventionCard">
+        <div class="intervention-title" id="interventionTitle"></div>
+        <div class="intervention-script" id="interventionScript"></div>
+      </div>
+      <div class="copy-bar">
+        <button class="btn-export" onclick="exportRisk()">⬇ 匯出 .txt</button>
+        <button class="btn-copy" id="copyRiskBtn" onclick="copyRisk()">📋 複製介入建議</button>
+      </div>
+      <button class="btn-outline" onclick="resetRisk()">↺ 重新評估</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>AI 直銷成長作戰系統 v1.0 · 台灣雅芳業務營運處 · Module 05</footer>
+
+<script>
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tp-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   TEAM MEMBER MANAGEMENT
+   ========================================================= */
+let memberCount = 0;
+const members = {};
+
+function addMember() {
+  memberCount++;
+  const id = 'm' + memberCount;
+  members[id] = { name: '', perf: null, attend: null, learn: null, social: null };
+
+  const el = document.createElement('div');
+  el.className = 'member-card open active-card';
+  el.id = 'mc-' + id;
+  el.innerHTML = `
+    <div class="member-head" onclick="toggleMember('${id}')">
+      <span class="member-num">#${memberCount}</span>
+      <span class="member-name-display" id="nd-${id}">（尚未填寫姓名）</span>
+      <button class="del-member" onclick="event.stopPropagation();deleteMember('${id}')">✕</button>
+      <span class="member-arrow">▼</span>
+    </div>
+    <div class="member-body">
+      <div class="member-form">
+        <div class="fg" style="margin-bottom:14px;">
+          <label>夥伴姓名</label>
+          <input type="text" placeholder="姓名或暱稱" id="mn-${id}"
+            oninput="members['${id}'].name=this.value;document.getElementById('nd-${id}').textContent=this.value||'（尚未填寫姓名）';checkAnalyzeReady()">
+        </div>
+
+        <div class="dim-row">
+          <label class="dim-lbl">近三個月業績趨勢</label>
+          <div class="radio-opts">
+            ${['上升','持平','下滑'].map((v,i)=>`
+            <label class="radio-opt">
+              <input type="radio" name="perf-${id}" value="${3-i}"
+                onchange="members['${id}'].perf=${3-i};checkAnalyzeReady()">
+              <span>${v}</span>
+            </label>`).join('')}
+          </div>
+        </div>
+
+        <div class="dim-row">
+          <label class="dim-lbl">出勤穩定度</label>
+          <div class="radio-opts">
+            ${[['穩定',3],['偶有請假',2],['出勤不穩',1]].map(([v,s])=>`
+            <label class="radio-opt">
+              <input type="radio" name="attend-${id}" value="${s}"
+                onchange="members['${id}'].attend=${s};checkAnalyzeReady()">
+              <span>${v}</span>
+            </label>`).join('')}
+          </div>
+        </div>
+
+        <div class="dim-row">
+          <label class="dim-lbl">學習意願</label>
+          <div class="radio-opts">
+            ${[['積極主動',3],['一般',2],['消極被動',1]].map(([v,s])=>`
+            <label class="radio-opt">
+              <input type="radio" name="learn-${id}" value="${s}"
+                onchange="members['${id}'].learn=${s};checkAnalyzeReady()">
+              <span>${v}</span>
+            </label>`).join('')}
+          </div>
+        </div>
+
+        <div class="dim-row" style="margin-bottom:0;">
+          <label class="dim-lbl">團隊人際狀態</label>
+          <div class="radio-opts">
+            ${[['融洽活躍',3],['普通',2],['較孤立',1]].map(([v,s])=>`
+            <label class="radio-opt">
+              <input type="radio" name="social-${id}" value="${s}"
+                onchange="members['${id}'].social=${s};checkAnalyzeReady()">
+              <span>${v}</span>
+            </label>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('memberList').appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function toggleMember(id) {
+  document.getElementById('mc-' + id).classList.toggle('open');
+}
+
+function deleteMember(id) {
+  document.getElementById('mc-' + id).remove();
+  delete members[id];
+  checkAnalyzeReady();
+}
+
+function checkAnalyzeReady() {
+  const filled = Object.values(members).some(m =>
+    m.name && m.perf !== null && m.attend !== null && m.learn !== null && m.social !== null);
+  document.getElementById('analyzeBtn').disabled = !filled;
+}
+
+/* =========================================================
+   QUADRANT LOGIC
+   ========================================================= */
+const QUADRANTS = {
+  star: { key:'star', cls:'s-star q-star', icon:'⭐', name:'明星夥伴', tagCls:'q-star' },
+  rise: { key:'rise', cls:'s-rise q-rise', icon:'🌱', name:'潛力股',   tagCls:'q-rise' },
+  vet:  { key:'vet',  cls:'s-vet  q-vet',  icon:'🛡', name:'資深穩定', tagCls:'q-vet'  },
+  risk: { key:'risk', cls:'s-risk q-risk', icon:'⚠️', name:'高風險',   tagCls:'q-risk' },
+};
+
+const STRATEGIES = {
+  star: {
+    desc: '明星夥伴是您團隊最寶貴的資產。她們的自驅力強，產出穩定，最怕的是感到被「忽視」或「停滯」。您的任務是讓她們感受到被看見、被重視，並為她們創造成長的空間。',
+    actions: [
+      '每月主動安排一次深度對話：不談業績，只聊「她想去哪裡、你能怎麼幫她」。',
+      '給予實質的晉升機會或培訓資源，讓她看到繼續投入的理由。',
+      '在公開場合（晨會、群組）具體說出她的貢獻，讓她的努力被看見。',
+      '邀請她分擔部分帶人責任，培養她成為未來的種子主管。',
+      '主動詢問她的困境，而不是等她來找你——明星夥伴通常不輕易求助。',
+    ]
+  },
+  rise: {
+    desc: '潛力股的意願高、衝勁足，欠缺的是技術與方法。她們需要的不是激勵，而是具體的技能輔導和及時的成功經驗。放著不管，她們的熱情很容易在碰壁中消耗殆盡。',
+    actions: [
+      '每週陪她設定一個具體的小目標，完成後立即給予正向回饋，建立成功的節奏感。',
+      '一對一話術演練：從她最弱的一個環節開始，每週練習一個情境。',
+      '讓她跟在明星夥伴旁邊觀摩，而不只是聽你說怎麼做。',
+      '給她「安全失敗」的空間：讓她嘗試，失敗了一起覆盤，而不是在失敗前就替她攔下。',
+      '月底一起回顧：這個月她進步了什麼，讓她自己說出來。',
+    ]
+  },
+  vet: {
+    desc: '資深穩定的夥伴有實力，但動力在消退。她們可能已經「舒適」了，或者有些隱藏的不滿沒有說出口。強迫她們衝業績適得其反——重燃動機才是關鍵任務。',
+    actions: [
+      '安排一次輕鬆的私下對話：「你現在做這件事，最讓你有成就感的是什麼？」聽她說。',
+      '找出她的「卡點」：是收入天花板？還是人際問題？還是看不到晉升機會？',
+      '給她一個新的挑戰或角色（如：帶領新人、主持一次晨會），打破慣性。',
+      '避免持續施加業績壓力，而是用目標討論取代指令式要求。',
+      '如果動機問題持續無解，直接問：「你現在對這件事的狀態，你自己怎麼看？」',
+    ]
+  },
+  risk: {
+    desc: '高風險夥伴需要您立即採取行動，不能等待或觀望。這不代表她已經沒救，而是代表她需要的支持，現在沒有得到。這一週內安排一次一對一是您最重要的任務。',
+    actions: [
+      '本週內、最慢下週一：安排一次一對一私下對話，不要在群組或公開場合討論她的狀況。',
+      '開場白不談業績，先問：「最近還好嗎？我有點擔心你。」讓她先說話。',
+      '了解是「外在障礙」（缺錢、缺時間、家人不支持）還是「內在動機」問題，分別對應不同的支持方式。',
+      '如果她表示想離開，不要說服，先問：「是什麼讓你有這個念頭？」——了解後再回應。',
+      '給出一個具體的三週行動計畫，和她一起承諾，三週後重新評估。',
+    ]
+  }
+};
+
+function classifyMember(m) {
+  const output  = (m.perf || 0) + (m.attend || 0); // 2–6
+  const willing = (m.learn || 0) + (m.social || 0); // 2–6
+  const hi_out = output  >= 5;
+  const hi_wil = willing >= 5;
+  if (hi_out &&  hi_wil) return 'star';
+  if (!hi_out && hi_wil) return 'rise';
+  if (hi_out && !hi_wil) return 'vet';
+  return 'risk';
+}
+
+function runAnalysis() {
+  const manager = document.getElementById('managerName').value.trim() || '主管';
+  const achieve = document.getElementById('achievement').value || '—';
+  const size    = document.getElementById('teamSize').value || '—';
+  const tenure  = document.getElementById('avgTenure').value || '—';
+  const today   = new Date().toLocaleDateString('zh-TW');
+
+  // Classify all members
+  const buckets = { star:[], rise:[], vet:[], risk:[] };
+  Object.values(members).forEach(m => {
+    if (m.name) buckets[classifyMember(m)].push(m.name);
+  });
+
+  // Update quadrant grid
+  const grid = document.getElementById('quadrantGrid');
+  grid.innerHTML = Object.entries({
+    star:'q-star', rise:'q-rise', vet:'q-vet', risk:'q-risk'
+  }).map(([key, cls]) => {
+    const q = QUADRANTS[key];
+    const names = buckets[key];
+    return `<div class="q-card ${cls}">
+      <div class="q-label">${key==='star'?'高產出 · 高意願':key==='rise'?'低產出 · 高意願':key==='vet'?'高產出 · 低意願':'低產出 · 低意願'}</div>
+      <div class="q-title">${q.icon} ${q.name}</div>
+      <div class="q-members">${names.length
+        ? names.map(n=>`<span class="q-member-tag">${n}</span>`).join('')
+        : '<span class="q-empty">本次無</span>'}</div>
+    </div>`;
+  }).join('');
+
+  // Update subtitle
+  document.getElementById('analysisSub').textContent =
+    `團隊 ${size} 人 · 本月達成率 ${achieve}% · 平均業齡 ${tenure} 月 · ${today}`;
+
+  // Render strategy blocks
+  const sb = document.getElementById('strategyBlocks');
+  sb.innerHTML = Object.entries(STRATEGIES).map(([key, s]) => {
+    const q = QUADRANTS[key];
+    const cnt = buckets[key].length;
+    return `<div class="strategy-block ${q.cls.split(' ')[0]}" id="sb-${key}">
+      <div class="strategy-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="strategy-icon">${q.icon}</span>
+        <div class="strategy-name">${q.name}</div>
+        <span class="strategy-count">${cnt} 人</span>
+        <span class="s-arr">▼</span>
+      </div>
+      <div class="strategy-body">
+        <div class="strategy-content">
+          <div class="s-desc">${s.desc}</div>
+          <ul class="s-actions">${s.actions.map(a=>`<li>${a}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Auto-open strategies that have members
+  ['star','rise','vet','risk'].forEach(k => {
+    if (buckets[k].length > 0) document.getElementById('sb-' + k).classList.add('open');
+  });
+
+  // Priority list
+  const priorities = buildPriorities(buckets, manager);
+  const pc = document.getElementById('priorityCard');
+  document.getElementById('priorityList').innerHTML = priorities.map((p,i) => `
+    <div class="priority-item">
+      <div class="p-rank p-${i+1}">${i+1}</div>
+      <div class="p-content">
+        <div class="p-label">${p.label}</div>
+        <div class="p-action">${p.action}</div>
+      </div>
+    </div>`).join('');
+  pc.style.display = 'block';
+
+  // Switch to analysis tab
+  switchTab('analysis', document.getElementById('tab-analysis'));
+}
+
+function buildPriorities(buckets, manager) {
+  const list = [];
+  if (buckets.risk.length > 0)
+    list.push({ label:'🚨 緊急介入', action: `本週內與 ${buckets.risk.join('、')} 安排一對一私下對話，了解離開意願與核心困境，給出三週行動計畫。` });
+  if (buckets.vet.length > 0)
+    list.push({ label:'🔥 重燃動機', action: `與 ${buckets.vet.join('、')} 進行動機診斷對話，找出「卡點」，嘗試給予新角色或新挑戰，打破慣性。` });
+  if (buckets.rise.length > 0)
+    list.push({ label:'📈 技能輔導', action: `為 ${buckets.rise.join('、')} 設計每週一次的一對一話術演練，幫助她們獲得第一個顯著成果，建立信心。` });
+  if (buckets.star.length > 0)
+    list.push({ label:'⭐ 培育晉升', action: `與 ${buckets.star.join('、')} 討論下一個 90 天的個人成長目標，給予更大舞台，防止人才流失。` });
+  if (list.length === 0)
+    list.push({ label:'持續觀察', action: '目前尚無成員資料，請先完成團隊健診。' });
+  return list.slice(0, 4);
+}
+
+function goReset() {
+  switchTab('input', document.querySelector('.main-tab'));
+  document.querySelectorAll('.main-tab')[0].classList.add('active');
+}
+
+function getAnalysisText() {
+  const today = new Date().toLocaleDateString('zh-TW');
+  return [
+    '══════════════════════════════',
+    '✦  台灣雅芳 ｜ 團隊象限分析報告',
+    '══════════════════════════════',
+    `分析時間：${today}`,
+    '',
+    document.getElementById('quadrantGrid').innerText,
+    '',
+    '【各象限策略建議】',
+    document.getElementById('strategyBlocks').innerText,
+    '',
+    '【本月主管工作重點】',
+    document.getElementById('priorityList').innerText,
+    '',
+    'AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處',
+    '══════════════════════════════',
+  ].join('\n');
+}
+
+function copyAnalysis() {
+  navigator.clipboard.writeText(getAnalysisText()).then(() => {
+    const btn = document.getElementById('copyAnalysisBtn');
+    btn.textContent = '✓ 已複製！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '📋 複製分析報告'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function exportAnalysis() {
+  const blob = new Blob([getAnalysisText()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `雅芳團隊分析_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+/* =========================================================
+   RISK ASSESSMENT
+   ========================================================= */
+const RISK_QS = [
+  { q: '本月出勤狀況比上個月明顯變差', score: 2 },
+  { q: '業績已連續兩個月以上呈現下滑', score: 2 },
+  { q: '主動聯繫主管或團隊的頻率明顯減少', score: 2 },
+  { q: '開始頻繁推辭培訓、課程或團隊活動', score: 1 },
+  { q: '對你或制度有抱怨、負面評論', score: 2 },
+  { q: '透露正在考慮其他工作或機會', score: 3 },
+  { q: '詢問過離開、停止或退出相關事宜', score: 3 },
+  { q: '與主管互動變得敷衍或迴避', score: 1 },
+  { q: '家庭、健康或財務狀況出現重大變化', score: 2 },
+  { q: '近期情緒明顯低落，對事業失去熱忱', score: 2 },
+];
+
+const riskAnswers = {};
+
+function buildRiskQuestions() {
+  const container = document.getElementById('riskQuestions');
+  container.innerHTML = RISK_QS.map((rq, i) => `
+    <div class="risk-q-item">
+      <div class="risk-q-text">${i+1}. ${rq.q}</div>
+      <div class="risk-yn">
+        <button class="yes-btn" id="ry-${i}" onclick="setRiskAns(${i},true,this)">是</button>
+        <button class="no-btn"  id="rn-${i}" onclick="setRiskAns(${i},false,this)">否</button>
+      </div>
+    </div>
+    ${i < RISK_QS.length-1 ? '<hr class="risk-divider">' : ''}`).join('');
+}
+
+function setRiskAns(i, val, btn) {
+  riskAnswers[i] = val;
+  document.getElementById('ry-'+i).classList.toggle('active', val===true);
+  document.getElementById('rn-'+i).classList.toggle('active', val===false);
+  const allAnswered = Object.keys(riskAnswers).length === RISK_QS.length;
+  document.getElementById('calcRiskBtn').disabled = !allAnswered;
+}
+
+const INTERVENTIONS = {
+  low: {
+    icon:'💚', level:'低風險', cls:'risk-low',
+    title:'建議：維持現有陪伴節奏',
+    script:`目前這位夥伴的狀況相對穩定，但仍建議保持定期關注。
+
+建議行動：
+每月至少一次主動的非業績關心（「最近生活還好嗎？有沒有什麼地方我可以幫你的？」）
+
+對話開場建議：
+「我最近在重新了解每個夥伴的狀況，想找你聊聊，不談業績，就是想知道你最近在哪個地方覺得最有能量、最充實？」
+
+請記住：狀況穩定不等於不需要關注，低風險的夥伴也可能因為感受到被忽視而悄悄離開。`
+  },
+  mid: {
+    icon:'🟡', level:'中度風險', cls:'risk-mid',
+    title:'建議：本週安排一次深度一對一',
+    script:`這位夥伴目前出現了數個警示訊號，建議本週內安排一次面對面或視訊的一對一對話，不宜再等待觀察。
+
+對話開場（請勿先談業績）：
+「我最近有點擔心你，不是因為業績，而是因為我感覺你的狀態跟之前有點不同。你願意讓我多了解一下你現在的狀況嗎？」
+
+探索核心問題的三個問句：
+1. 「你現在做這件事，最大的困難是什麼？」
+2. 「如果有一件事我可以幫你改善，你希望是什麼？」
+3. 「你對接下來三個月有沒有什麼期待或擔心？」
+
+對話後：給出一個具體的支持承諾，並約定三週後再次確認狀況。`
+  },
+  high: {
+    icon:'🔴', level:'高度風險', cls:'risk-high',
+    title:'建議：立即安排緊急介入對話',
+    script:`這位夥伴目前的離開風險極高，建議不超過三天內安排緊急一對一——不要傳訊息，要當面或視訊通話。
+
+緊急介入開場白（請直接說，不要繞圈子）：
+「我想直接跟你說，我最近注意到你的狀態跟之前不同，我很擔心你。我今天來不是要說服你做什麼決定，只是想先聽你說說，你現在心裡在想什麼？」
+
+千萬不要：
+✗ 不要在她開口前先談業績數字
+✗ 不要說「你再撐一下就好了」
+✗ 不要第一句話就問「你是不是想離開？」
+
+如果她提到想離開：
+「我尊重你的決定，但在你做決定之前，我希望你給我一個機會幫你找到問題的出口。你願意讓我們先試三週嗎？」
+
+對話結束後：立即擬定一個量身訂做的三週支持計畫，讓她感受到你是認真的。`
+  }
+};
+
+function calcRisk() {
+  const total = RISK_QS.reduce((sum, rq, i) => sum + (riskAnswers[i] ? rq.score : 0), 0);
+  const maxScore = RISK_QS.reduce((s, r) => s + r.score, 0);
+  const pct = Math.round((total / maxScore) * 100);
+  const name = document.getElementById('riskName').value.trim() || '這位夥伴';
+
+  let level;
+  if (total <= 4)       level = 'low';
+  else if (total <= 10) level = 'mid';
+  else                  level = 'high';
+
+  const d = INTERVENTIONS[level];
+  const banner = document.getElementById('riskBanner');
+  banner.className = 'risk-banner ' + d.cls;
+  document.getElementById('riskIcon').textContent  = d.icon;
+  document.getElementById('riskLevel').textContent = `${name} — ${d.level}`;
+  document.getElementById('riskScoreLbl').textContent = `風險指數 ${total} / ${maxScore} 分`;
+  document.getElementById('riskBar').style.width = pct + '%';
+
+  const ic = document.getElementById('interventionCard');
+  ic.className = 'intervention-card ' + d.cls;
+  document.getElementById('interventionTitle').textContent  = d.title;
+  document.getElementById('interventionTitle').className    = 'intervention-title';
+  document.getElementById('interventionScript').innerHTML   = d.script.split('\n').map(l => l ? `<p>${l}</p>` : '').join('');
+
+  const result = document.getElementById('riskResult');
+  result.classList.add('visible');
+  setTimeout(() => result.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function resetRisk() {
+  Object.keys(riskAnswers).forEach(k => delete riskAnswers[k]);
+  document.getElementById('riskName').value = '';
+  document.getElementById('calcRiskBtn').disabled = true;
+  document.getElementById('riskResult').classList.remove('visible');
+  buildRiskQuestions();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getRiskText() {
+  const name  = document.getElementById('riskName').value.trim() || '夥伴';
+  const today = new Date().toLocaleDateString('zh-TW');
+  return [
+    '══════════════════════════════',
+    '✦  台灣雅芳 ｜ 留才風險評估',
+    '══════════════════════════════',
+    `評估對象：${name} · 評估時間：${today}`,
+    '',
+    document.getElementById('interventionTitle').textContent,
+    '',
+    document.getElementById('interventionScript').innerText,
+    '',
+    'AI 直銷成長作戰系統 v1.0 ｜ 台灣雅芳業務營運處',
+    '══════════════════════════════',
+  ].join('\n');
+}
+
+function copyRisk() {
+  navigator.clipboard.writeText(getRiskText()).then(() => {
+    const btn = document.getElementById('copyRiskBtn');
+    btn.textContent = '✓ 已複製！';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = '📋 複製介入建議'; btn.classList.remove('ok'); }, 2200);
+  });
+}
+
+function exportRisk() {
+  const name = document.getElementById('riskName').value.trim() || '夥伴';
+  const blob = new Blob([getRiskText()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `雅芳留才評估_${name}_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  addMember();
+  addMember();
+  addMember();
+  buildRiskQuestions();
+  document.getElementById('riskName').addEventListener('input', () => {
+    const allAns = Object.keys(riskAnswers).length === RISK_QS.length;
+    document.getElementById('calcRiskBtn').disabled = !allAns;
+  });
+});
+</script>
+</body>
+</html>
